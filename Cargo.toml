@@ -1,0 +1,30 @@
+[package]
+name = "aoc22"
+version = "0.1.0"
+edition = "2021"
+authors = ["Tomasz Kłak <tomasz@tomaszklak.pl>"]
+
+[dependencies]
+# smallvec={version="1", features=["const_new"]}
+structopt = "0.3"
+# maplit="1"
+# rustc-hash = "1"
+# itertools = "0.10"
+# regex="1"
+# parking_lot = "0.11"
+# cached = { git="https://github.com/tumdum/cached.git", rev="9aaa3bcaca90ac0f6277e9f53c1b79637975aacb" }
+# once_cell = "1"
+memmap = "0.7"
+anyhow = "1"
+
+[profile.release]
+debug=true
+lto="fat"
+codegen-units=1
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benchmarks"
+harness = false
