@@ -43,31 +43,31 @@ fn main() {
 
     let solutions: Vec<&dyn Fn(&str, bool, bool) -> Result<Duration>> = vec![
         &aoc22::day01::solve,
+        &aoc22::day02::solve,
         /*
-        &aoc21::day02::solve,
-        &aoc21::day03::solve,
-        &aoc21::day04::solve,
-        &aoc21::day05::solve,
-        &aoc21::day06::solve,
-        &aoc21::day07::solve,
-        &aoc21::day08::solve,
-        &aoc21::day09::solve,
-        &aoc21::day10::solve,
-        &aoc21::day11::solve,
-        &aoc21::day12::solve,
-        &aoc21::day13::solve,
-        &aoc21::day14::solve,
-        &aoc21::day15::solve,
-        &aoc21::day16::solve,
-        &aoc21::day17::solve,
-        &aoc21::day18::solve,
-        &aoc21::day19::solve,
-        &aoc21::day20::solve,
-        &aoc21::day21::solve,
-        &aoc21::day22::solve,
-        &aoc21::day23::solve,
-        &aoc21::day24::solve,
-        &aoc21::day25::solve,
+        &aoc22::day03::solve,
+        &aoc22::day04::solve,
+        &aoc22::day05::solve,
+        &aoc22::day06::solve,
+        &aoc22::day07::solve,
+        &aoc22::day08::solve,
+        &aoc22::day09::solve,
+        &aoc22::day10::solve,
+        &aoc22::day11::solve,
+        &aoc22::day12::solve,
+        &aoc22::day13::solve,
+        &aoc22::day14::solve,
+        &aoc22::day15::solve,
+        &aoc22::day16::solve,
+        &aoc22::day17::solve,
+        &aoc22::day18::solve,
+        &aoc22::day19::solve,
+        &aoc22::day20::solve,
+        &aoc22::day21::solve,
+        &aoc22::day22::solve,
+        &aoc22::day23::solve,
+        &aoc22::day24::solve,
+        &aoc22::day25::solve,
         */
     ];
 
@@ -81,7 +81,7 @@ fn main() {
             let input = std::str::from_utf8(&mapped_input).unwrap();
 
             let start = Instant::now();
-            let t = match solution(&input, !opt.skip_verification, !opt.skip_output) {
+            let t = match solution(input, !opt.skip_verification, !opt.skip_output) {
                 Ok(t) => t,
                 Err(e) => {
                     eprintln!("Solution {i} failed: {e}");
