@@ -1,3 +1,6 @@
+pub mod u8set;
+use u8set::U8Set;
+
 pub mod day01;
 pub mod day02;
 pub mod day03;
