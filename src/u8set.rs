@@ -48,6 +48,19 @@ impl FromIterator<u8> for U8Set {
     }
 }
 
+impl<'a> FromIterator<&'a u8> for U8Set {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = &'a u8>,
+    {
+        let mut ret = Self::default();
+        for i in iter {
+            ret.insert(*i);
+        }
+        ret
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

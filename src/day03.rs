@@ -19,22 +19,21 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     let part1: u64 = input
         .iter()
-        .map(|v| {
+        .flat_map(|v| {
             let len = v.len() / 2;
-            let l: U8Set = v[..len].iter().copied().collect();
-            let r: U8Set = v[len..].iter().copied().collect();
-            (l, r)
+            let l: U8Set = v[..len].iter().collect();
+            let r: U8Set = v[len..].iter().collect();
+            l.intersection(&r).iter().next()
         })
-        .flat_map(|(l, r)| l.intersection(&r).iter().next())
         .map(score)
         .sum();
 
     let part2: u64 = input
         .chunks(3)
         .flat_map(|c| {
-            let a: U8Set = c[0].iter().copied().collect();
-            let b: U8Set = c[1].iter().copied().collect();
-            let c: U8Set = c[2].iter().copied().collect();
+            let a: U8Set = c[0].iter().collect();
+            let b: U8Set = c[1].iter().collect();
+            let c: U8Set = c[2].iter().collect();
             a.intersection(&b).intersection(&c).iter().next()
         })
         .map(score)
