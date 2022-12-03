@@ -12,7 +12,10 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     let l = input.len();
     let (_, _, top3) = input.select_nth_unstable(l - 4);
-    let part1 = *top3.iter().max().ok_or_else(|| anyhow!("not enough elements"))?;
+    let part1 = *top3
+        .iter()
+        .max()
+        .ok_or_else(|| anyhow!("not enough elements"))?;
     let part2: u32 = top3.iter().sum();
 
     let e = s.elapsed();
