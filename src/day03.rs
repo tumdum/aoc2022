@@ -1,6 +1,6 @@
+use crate::U8Set;
 use anyhow::Result;
 use std::time::{Duration, Instant};
-use crate::U8Set;
 
 fn score(b: u8) -> u64 {
     if b < b'a' {
