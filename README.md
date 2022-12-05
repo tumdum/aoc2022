@@ -2,12 +2,14 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took        1.949µs to compute (with i/o:       84.671µs)
-Day 02 took       50.453µs to compute (with i/o:        155.2µs)
-Day 03 took       62.911µs to compute (with i/o:        96.67µs)
+Day 01 took        2.143µs to compute (with i/o:       77.183µs)
+Day 02 took       47.534µs to compute (with i/o:       159.48µs)
+Day 03 took       69.644µs to compute (with i/o:      102.968µs)
+Day 04 took        6.794µs to compute (with i/o:      121.336µs)
+Day 05 took        36.99µs to compute (with i/o:       99.873µs)
 
-         Total time for 3 days:      115.313µs (avg per day   38.438µs, med:   50.453µs, min:    1.949µs, max:   62.911µs)
-Total time with i/o for 3 days:      336.541µs (avg per day   112.18µs, med:    96.67µs, min:   84.671µs, max:    155.2µs)
+         Total time for 5 days:      163.105µs (avg per day   32.621µs, med:    36.99µs, min:    2.143µs, max:   69.644µs)
+Total time with i/o for 5 days:       560.84µs (avg per day  112.168µs, med:  102.968µs, min:   77.183µs, max:   159.48µs)
 ```
 
 # previous solutions
