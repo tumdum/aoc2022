@@ -1,6 +1,20 @@
-#[derive(Default, PartialEq, Eq, Debug)]
+use std::fmt::{Debug, Error, Formatter};
+
+#[derive(Default, PartialEq, Eq)]
 pub struct U8Set {
     data: [u64; 4],
+}
+
+impl Debug for U8Set {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "U8Set{{")?;
+        for i in 0..=255 {
+            if self.contains(i) {
+                write!(f, "{i}, ")?;
+            }
+        }
+        write!(f, "}}")
+    }
 }
 
 impl U8Set {
@@ -112,7 +126,7 @@ mod tests {
     #[test]
     fn intersection_self() {
         let v = vec![1u8, 22, 68, 99, 129, 157, 200, 201, 255];
-        let s: U8Set = v.clone().into_iter().collect();
+        let s: U8Set = v.into_iter().collect();
         let si = s.intersection(&s);
         assert_eq!(si, s);
     }
@@ -120,9 +134,9 @@ mod tests {
     #[test]
     fn intersection_sub() {
         let v = vec![1u8, 22, 68, 99, 129, 157, 200, 201, 255];
-        let s: U8Set = v.clone().into_iter().collect();
+        let s: U8Set = v.into_iter().collect();
         let sub = vec![1u8, 68, 99, 157, 200, 255];
-        let s_sub: U8Set = v.clone().into_iter().collect();
+        let s_sub: U8Set = sub.into_iter().collect();
         assert_eq!(s_sub, s.intersection(&s_sub));
         assert_eq!(s_sub, s_sub.intersection(&s));
     }
@@ -130,11 +144,11 @@ mod tests {
     #[test]
     fn intersection() {
         let v = vec![1u8, 22, 68, 99, 129, 157, 200, 201, 255];
-        let s: U8Set = v.clone().into_iter().collect();
+        let s: U8Set = v.into_iter().collect();
         let w = vec![1u8, 15, 68, 99, 121, 157, 200, 254, 255];
-        let s_sub: U8Set = v.clone().into_iter().collect();
+        let s_sub: U8Set = w.into_iter().collect();
         let i = vec![1u8, 68, 99, 157, 200, 255];
-        let si: U8Set = v.clone().into_iter().collect();
+        let si: U8Set = i.into_iter().collect();
         assert_eq!(si, s.intersection(&s_sub));
         assert_eq!(si, s_sub.intersection(&s));
     }
