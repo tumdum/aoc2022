@@ -1,4 +1,4 @@
-# aoc2021
+# aoc2022
 solutions for advent of code 2022
 
 ```
