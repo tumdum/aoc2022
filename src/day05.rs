@@ -11,23 +11,23 @@ struct Move {
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
     let input: Vec<_> = input.lines().collect();
     let mut input = input.split(|l| l.is_empty());
-    let stacks: Vec<Vec<char>> = input
+    let stacks: Vec<Vec<u8>> = input
         .next()
         .unwrap()
         .iter()
-        .map(|l| l.chars().collect())
+        .map(|l| l.bytes().collect())
         .collect();
-    let mut stacks: Vec<Vec<char>> = stacks
+    let mut stacks: Vec<Vec<u8>> = stacks
         .last()
         .unwrap()
         .iter()
         .enumerate()
-        .filter(|(_, column_name)| **column_name != ' ')
+        .filter(|(_, column_name)| **column_name != b' ')
         .map(|(column_idx, _)| {
             stacks
                 .iter()
                 .map(|l| l[column_idx])
-                .filter(|c| c.is_alphabetic())
+                .filter(|c| c.is_ascii_alphabetic())
                 .rev()
                 .collect()
         })
@@ -55,7 +55,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 stacks[m.to - 1].push(tmp);
             }
         }
-        stacks.iter().map(|s| s.last().unwrap()).collect()
+        stacks.iter().map(|s| *s.last().unwrap() as char).collect()
     };
 
     for m in &moves {
@@ -64,7 +64,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         stacks[m.from - 1].truncate(cut_point);
         stacks[m.to - 1].extend_from_slice(&to_move);
     }
-    let part2: String = stacks.iter().map(|s| s.last().unwrap()).collect();
+    let part2: String = stacks.iter().map(|s| *s.last().unwrap() as char).collect();
 
     let e = s.elapsed();
 
