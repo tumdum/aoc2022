@@ -1,32 +1,49 @@
 use crate::U8Set;
 use anyhow::Result;
 use std::time::{Duration, Instant};
-use std::collections::HashSet;
+
+fn all_diff(v: &[u8]) -> bool {
+    let mut seen = U8Set::default();
+    for c in v {
+        if seen.insert(*c) {
+            return false;
+        }
+    }
+    true
+}
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input : Vec<_> = input.trim().chars().collect();
+    let input: Vec<_> = input.trim().bytes().collect();
 
     let s = Instant::now();
 
-    let LEN = 4;
-    let part1 = input.windows(LEN).enumerate().find(|(i, w)| w.iter().collect::<HashSet<_>>().len() == LEN).unwrap().0 + LEN;
-    dbg!(part1);
+    let len = 4;
+    let part1 = input
+        .windows(len)
+        .enumerate()
+        .find(|(_, w)| all_diff(w))
+        .unwrap()
+        .0
+        + len;
 
-    let LEN = 14;
-    let part2 = input.windows(LEN).enumerate().find(|(i, w)| w.iter().collect::<HashSet<_>>().len() == LEN).unwrap().0 + LEN;
-    dbg!(part2);
+    let len = 14;
+    let part2 = input
+        .windows(len)
+        .enumerate()
+        .find(|(_, w)| all_diff(w))
+        .unwrap()
+        .0
+        + len;
 
     let e = s.elapsed();
-    /*
 
     if verify_expected {
-        assert_eq!(7917, part1);
-        assert_eq!(2585, part2);
+        assert_eq!(1912, part1);
+        assert_eq!(2122, part2);
     }
     if output {
         println!("\t{}", part1);
         println!("\t{}", part2);
     }
-    */
     Ok(e)
 }
