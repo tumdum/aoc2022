@@ -81,10 +81,7 @@ fn reconstruct_fs(commands: Vec<Cmd>) -> Vec<(String, Vec<Entry>)> {
                 cwd.push(s.to_owned());
             }
             Cmd::Ls(entries) => {
-                let dir_entry = file_system.entry(cwd.clone()).or_default();
-                for e in entries {
-                    dir_entry.push(e);
-                }
+                file_system.entry(cwd.clone()).or_default().extend(entries);
             }
         }
     }
