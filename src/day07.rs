@@ -21,8 +21,7 @@ struct Command<'a> {
     output: Vec<&'a str>,
 }
 
-pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<&str> = input.lines().collect();
+fn parse(input: Vec<&'_ str>) -> Vec<Cmd<'_>> {
     let mut commands: Vec<Command> = vec![];
     let mut next = Command::default();
     for line in input {
@@ -40,9 +39,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     }
     commands.push(next);
 
-    let s = Instant::now();
-
-    let commands: Vec<Cmd> = commands
+    commands
         .into_iter()
         .map(|c| {
             if c.cmd == "$ ls" {
@@ -66,9 +63,11 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 Cmd::Cd(cmd.next().unwrap())
             }
         })
-        .collect();
+        .collect()
+}
 
-    let mut dir2entries: HashMap<Vec<String>, Vec<Entry>> = HashMap::default();
+fn reconstruct_fs(commands: Vec<Cmd>) -> Vec<(String, Vec<Entry>)> {
+    let mut file_system: HashMap<Vec<String>, Vec<Entry>> = HashMap::default();
     let mut cwd = vec![];
     for c in commands {
         match c {
@@ -82,22 +81,25 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 cwd.push(s.to_owned());
             }
             Cmd::Ls(entries) => {
-                let dir_entry = dir2entries.entry(cwd.clone()).or_default();
+                let dir_entry = file_system.entry(cwd.clone()).or_default();
                 for e in entries {
                     dir_entry.push(e);
                 }
             }
         }
     }
-    let mut dir2entries: Vec<(String, Vec<Entry>)> = dir2entries
+    let mut file_system: Vec<(String, Vec<Entry>)> = file_system
         .into_iter()
         .map(|(name, content)| (name.join("/"), content))
         .collect();
 
-    dir2entries.sort_unstable_by_key(|(name, _)| Reverse(name.len()));
+    file_system.sort_unstable_by_key(|(name, _)| Reverse(name.len()));
+    file_system
+}
 
+fn compute_total_sizes(file_system: Vec<(String, Vec<Entry>)>) -> HashMap<String, usize> {
     let mut total_sizes: HashMap<String, usize> = HashMap::default();
-    for (name, entries) in dir2entries {
+    for (name, entries) in file_system {
         let mut total = 0;
         for e in entries {
             match e {
@@ -110,6 +112,17 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         }
         total_sizes.insert(name, total);
     }
+    total_sizes
+}
+
+pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
+    let input: Vec<&str> = input.lines().collect();
+
+    let s = Instant::now();
+
+    let commands_and_outputs = parse(input);
+    let file_system = reconstruct_fs(commands_and_outputs);
+    let total_sizes = compute_total_sizes(file_system);
 
     let part1: usize = total_sizes
         .iter()
