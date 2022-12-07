@@ -4,21 +4,21 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 #[derive(Debug)]
-enum Entry {
-    File(String, usize),
-    Dir(String),
+enum Entry<'a> {
+    File(&'a str, usize),
+    Dir(&'a str),
 }
 
 #[derive(Debug)]
-enum Cmd {
-    Ls(Vec<Entry>),
-    Cd(String),
+enum Cmd<'a> {
+    Ls(Vec<Entry<'a>>),
+    Cd(&'a str),
 }
 
 #[derive(Default, Debug)]
-struct Command {
-    cmd: String,
-    output: Vec<String>,
+struct Command<'a> {
+    cmd: &'a str,
+    output: Vec<&'a str>,
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -31,11 +31,11 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 commands.push(next);
             }
             next = Command {
-                cmd: line.to_owned(),
+                cmd: line,
                 output: vec![],
             };
         } else {
-            next.output.push(line.to_owned());
+            next.output.push(line);
         }
     }
     commands.push(next);
@@ -54,36 +54,37 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                         let size_str = l.next().unwrap();
                         let name = l.next().unwrap();
                         if size_str == "dir" {
-                            Entry::Dir(name.to_owned())
+                            Entry::Dir(name)
                         } else {
-                            Entry::File(name.to_owned(), size_str.parse().unwrap())
+                            Entry::File(name, size_str.parse().unwrap())
                         }
                     })
                     .collect();
                 Cmd::Ls(output)
             } else {
                 let mut cmd = c.cmd.split(' ').skip(2);
-                Cmd::Cd(cmd.next().unwrap().to_owned())
+                Cmd::Cd(cmd.next().unwrap())
             }
         })
         .collect();
 
     let mut dir2files: HashMap<Vec<String>, Vec<Entry>> = HashMap::default();
-    let mut cwd = vec!["/".to_owned()];
+    let mut cwd = vec![];
     for c in commands {
         match c {
             Cmd::Cd(s) if s == "/" => {
-                cwd = vec![s.clone()];
+                cwd = vec![s.to_owned()];
             }
             Cmd::Cd(s) if s == ".." => {
                 cwd.pop();
             }
             Cmd::Cd(s) => {
-                cwd.push(s);
+                cwd.push(s.to_owned());
             }
             Cmd::Ls(entries) => {
+                let dir_entry = dir2files.entry(cwd.clone()).or_default();
                 for e in entries {
-                    dir2files.entry(cwd.clone()).or_default().push(e);
+                    dir_entry.push(e);
                 }
             }
         }
