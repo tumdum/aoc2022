@@ -68,7 +68,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         })
         .collect();
 
-    let mut dir2files: HashMap<Vec<String>, Vec<Entry>> = HashMap::default();
+    let mut dir2entries: HashMap<Vec<String>, Vec<Entry>> = HashMap::default();
     let mut cwd = vec![];
     for c in commands {
         match c {
@@ -82,22 +82,22 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 cwd.push(s.to_owned());
             }
             Cmd::Ls(entries) => {
-                let dir_entry = dir2files.entry(cwd.clone()).or_default();
+                let dir_entry = dir2entries.entry(cwd.clone()).or_default();
                 for e in entries {
                     dir_entry.push(e);
                 }
             }
         }
     }
-    let mut dir2files: Vec<(String, Vec<Entry>)> = dir2files
+    let mut dir2entries: Vec<(String, Vec<Entry>)> = dir2entries
         .into_iter()
         .map(|(name, content)| (name.join("/"), content))
         .collect();
 
-    dir2files.sort_by_key(|(name, _)| Reverse(name.len()));
+    dir2entries.sort_unstable_by_key(|(name, _)| Reverse(name.len()));
 
     let mut total_sizes: HashMap<String, usize> = HashMap::default();
-    for (name, entries) in dir2files {
+    for (name, entries) in dir2entries {
         let mut total = 0;
         for e in entries {
             match e {
@@ -123,7 +123,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let to_delete = need - current_unused;
 
     let mut total_sizes: Vec<(String, usize)> = total_sizes.into_iter().collect();
-    total_sizes.sort_by_key(|(_, size)| *size);
+    total_sizes.sort_unstable_by_key(|(_, size)| *size);
     let idx = match total_sizes.binary_search_by_key(&to_delete, |(_, size)| *size) {
         Ok(i) => i,
         Err(i) => i,
