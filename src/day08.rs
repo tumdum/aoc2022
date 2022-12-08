@@ -1,5 +1,16 @@
 use anyhow::Result;
+use itertools::{
+    iproduct,
+    FoldWhile::{Continue, Done},
+    Itertools,
+};
 use std::time::{Duration, Instant};
+const DIRS: [Pos; 4] = [
+    Pos { row: 1, col: 0 },
+    Pos { row: -1, col: 0 },
+    Pos { row: 0, col: 1 },
+    Pos { row: 0, col: -1 },
+];
 
 #[derive(Debug, Clone, Copy)]
 struct Pos {
@@ -8,11 +19,6 @@ struct Pos {
 }
 
 impl Pos {
-    fn add(&mut self, other: &Self) {
-        self.row += other.row;
-        self.col += other.col;
-    }
-
     fn is_outside(&self, trees: &[Vec<i8>]) -> bool {
         self.row < 0
             || self.col < 0
@@ -20,12 +26,22 @@ impl Pos {
             || (self.col as usize) >= trees[0].len()
     }
 
-    fn get(&self, trees: &[Vec<i8>]) -> Option<i8> {
-        if self.is_outside(trees) {
-            None
-        } else {
-            Some(trees[self.row as usize][self.col as usize])
-        }
+    fn move_by<'a>(&self, dir: Self, trees: &'a [Vec<i8>]) -> impl Iterator<Item = i8> + 'a {
+        use itertools::iterate;
+        iterate(*self, move |p| {
+            let mut next = *p;
+            next.row += dir.row;
+            next.col += dir.col;
+            next
+        })
+        .skip(1)
+        .map_while(|p| {
+            if p.is_outside(trees) {
+                None
+            } else {
+                Some(trees[p.row as usize][p.col as usize])
+            }
+        })
     }
 }
 
@@ -35,30 +51,19 @@ fn scenic_score(trees: &[Vec<i8>], row: usize, col: usize) -> usize {
         col: col as isize,
     };
     let start_h = trees[start.row as usize][start.col as usize];
-    let dirs = [
-        Pos { row: 1, col: 0 },
-        Pos { row: -1, col: 0 },
-        Pos { row: 0, col: 1 },
-        Pos { row: 0, col: -1 },
-    ];
-    let mut score_acc = 1;
-    for dir in dirs {
-        let mut c = 0;
-        let mut cur = start;
-        loop {
-            cur.add(&dir);
-            if let Some(h) = cur.get(&trees) {
-                c += 1;
-                if h >= start_h {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        score_acc *= c;
-    }
-    score_acc
+    DIRS.into_iter().fold(1, |score, dir| {
+        score
+            * start
+                .move_by(dir, trees)
+                .fold_while(0, |acc, h| {
+                    if h >= start_h {
+                        Done(acc + 1)
+                    } else {
+                        Continue(acc + 1)
+                    }
+                })
+                .into_inner()
+    })
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -69,10 +74,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     let s = Instant::now();
 
-    let mut visible: Vec<Vec<bool>> = input
-        .iter()
-        .map(|l| l.iter().map(|_| false).collect())
-        .collect();
+    let mut visible = vec![vec![false; input[0].len()]; input.len()];
 
     let cols = input[0].len();
     let len = input.len();
@@ -111,20 +113,10 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             .for_each(|row| mark_visible(&mut last, row, col));
     }
 
-    let part1 = visible
-        .into_iter()
-        .flat_map(|row| row)
-        .filter(|b| *b)
-        .count();
+    let part1 = visible.into_iter().flatten().filter(|b| *b).count();
 
-    let part2 = all_rows
-        .flat_map(|row| {
-            let row = row;
-            all_cols
-                .clone()
-                .map(|col| scenic_score(&input, row, col))
-                .collect::<Vec<_>>()
-        })
+    let part2 = iproduct!(all_rows, all_cols)
+        .map(|(row, col)| scenic_score(&input, row, col))
         .max()
         .unwrap();
 
