@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::cmp::Reverse;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::time::{Duration, Instant};
 
 #[derive(Debug)]

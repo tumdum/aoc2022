@@ -5,6 +5,10 @@ use std::path::PathBuf;
 use std::time::Duration;
 use std::time::Instant;
 use structopt::StructOpt;
+use jemallocator::Jemalloc;
+
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 #[derive(StructOpt, Debug)]
 #[structopt(author)]
