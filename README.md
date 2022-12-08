@@ -2,17 +2,17 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took      1.6µs to compute (running sum      1.6µs) (with i/o:    105.6µs, running sum    105.6µs)
-Day 02 took     47.4µs to compute (running sum     49.1µs) (with i/o:    180.4µs, running sum    286.1µs)
-Day 03 took     59.2µs to compute (running sum    108.3µs) (with i/o:    135.8µs, running sum    421.8µs)
-Day 04 took      8.2µs to compute (running sum    116.5µs) (with i/o:    163.5µs, running sum    585.4µs)
-Day 05 took     25.1µs to compute (running sum    141.6µs) (with i/o:    120.9µs, running sum    706.2µs)
-Day 06 took     54.8µs to compute (running sum    196.4µs) (with i/o:     55.6µs, running sum    761.8µs)
-Day 07 took    293.3µs to compute (running sum    489.6µs) (with i/o:    352.9µs, running sum      1.1ms)
-Day 08 took    478.5µs to compute (running sum    968.1µs) (with i/o:    493.2µs, running sum      1.6ms)
+Day 01 took     4.8µs to compute (rsum     4.8µs) (with i/o:   113.4µs, rsum   113.4µs)
+Day 02 took    47.1µs to compute (rsum    51.9µs) (with i/o:   163.6µs, rsum   277.0µs)
+Day 03 took    68.3µs to compute (rsum   120.2µs) (with i/o:   126.3µs, rsum   403.3µs)
+Day 04 took     7.7µs to compute (rsum   127.9µs) (with i/o:   138.2µs, rsum   541.4µs)
+Day 05 took    24.9µs to compute (rsum   152.8µs) (with i/o:   108.1µs, rsum   649.5µs)
+Day 06 took    39.1µs to compute (rsum   192.0µs) (with i/o:    40.1µs, rsum   689.7µs)
+Day 07 took   293.8µs to compute (rsum   485.7µs) (with i/o:   341.3µs, rsum     1.0ms)
+Day 08 took   471.5µs to compute (rsum   957.3µs) (with i/o:   482.5µs, rsum     1.5ms)
 
-         Total time for 8 days:    968.1µs (avg per day    121.0µs, med:     51.1µs, min:      1.6µs, max:    478.5µs)
-Total time with i/o for 8 days:      1.6ms (avg per day    201.0µs, med:    149.6µs, min:     55.6µs, max:    493.2µs)
+         Total time for 8 days:   957.3µs (avg per day   119.7µs, med:    43.1µs, min:     4.8µs, max:   471.5µs)
+Total time with i/o for 8 days:     1.5ms (avg per day   189.2µs, med:   132.2µs, min:    40.1µs, max:   482.5µs)
 ```
 
 # previous solutions
