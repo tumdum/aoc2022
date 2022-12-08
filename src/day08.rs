@@ -1,6 +1,6 @@
 use anyhow::Result;
 use itertools::{
-    iproduct,
+    iproduct, iterate,
     FoldWhile::{Continue, Done},
     Itertools,
 };
@@ -27,12 +27,9 @@ impl Pos {
     }
 
     fn move_by<'a>(&self, dir: Self, trees: &'a [Vec<i8>]) -> impl Iterator<Item = i8> + 'a {
-        use itertools::iterate;
-        iterate(*self, move |p| {
-            let mut next = *p;
-            next.row += dir.row;
-            next.col += dir.col;
-            next
+        iterate(*self, move |p| Pos {
+            row: p.row + dir.row,
+            col: p.col + dir.col,
         })
         .skip(1)
         .map_while(|p| {
