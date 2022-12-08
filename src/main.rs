@@ -1,11 +1,11 @@
 use anyhow::Result;
+use jemallocator::Jemalloc;
 use memmap::MmapOptions;
 use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::Instant;
 use structopt::StructOpt;
-use jemallocator::Jemalloc;
 
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
@@ -98,7 +98,7 @@ fn main() {
             running_sum_compute += t;
             running_sum_io += solution_with_io;
             println!(
-                "Day {:02} took {:>10} to compute (running sum {:>10}) (with i/o: {:>10}, running sum {:>10})",
+                "Day {:02} took {:>9} to compute (rsum {:>9}) (with i/o: {:>9}, rsum {:>9})",
                 i + 1,
                 d2s(t),
                 d2s(running_sum_compute),
@@ -122,7 +122,7 @@ fn main() {
     let max_io = times_io.iter().max();
     if opt.day_to_run.is_none() {
         println!(
-            "\n         Total time for {} days: {:>10} (avg per day {:>10}, med: {:>10}, min: {:>10}, max: {:>10})",
+            "\n         Total time for {} days: {:>9} (avg per day {:>9}, med: {:>9}, min: {:>9}, max: {:>9})",
             solutions.len(),
             d2s(total),
             d2s(total.div_f64(solutions.len() as f64)),
@@ -131,7 +131,7 @@ fn main() {
             d2s(*max.unwrap()),
         );
         println!(
-            "Total time with i/o for {} days: {:>10} (avg per day {:>10}, med: {:>10}, min: {:>10}, max: {:>10})",
+            "Total time with i/o for {} days: {:>9} (avg per day {:>9}, med: {:>9}, min: {:>9}, max: {:>9})",
             solutions.len(),
             d2s(total_io),
             d2s(total_io.div_f64(solutions.len() as f64)),
