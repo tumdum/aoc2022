@@ -2,17 +2,17 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took        1.863µs to compute (with i/o:       83.645µs)
-Day 02 took       50.359µs to compute (with i/o:      174.509µs)
-Day 03 took       67.986µs to compute (with i/o:      109.677µs)
-Day 04 took        7.285µs to compute (with i/o:       124.02µs)
-Day 05 took       30.518µs to compute (with i/o:       99.478µs)
-Day 06 took       41.225µs to compute (with i/o:       44.063µs)
-Day 07 took      341.097µs to compute (with i/o:      376.391µs)
-Day 08 took      476.131µs to compute (with i/o:      498.332µs)
+Day 01 took      1.6µs to compute (running sum      1.6µs) (with i/o:    105.6µs, running sum    105.6µs)
+Day 02 took     47.4µs to compute (running sum     49.1µs) (with i/o:    180.4µs, running sum    286.1µs)
+Day 03 took     59.2µs to compute (running sum    108.3µs) (with i/o:    135.8µs, running sum    421.8µs)
+Day 04 took      8.2µs to compute (running sum    116.5µs) (with i/o:    163.5µs, running sum    585.4µs)
+Day 05 took     25.1µs to compute (running sum    141.6µs) (with i/o:    120.9µs, running sum    706.2µs)
+Day 06 took     54.8µs to compute (running sum    196.4µs) (with i/o:     55.6µs, running sum    761.8µs)
+Day 07 took    293.3µs to compute (running sum    489.6µs) (with i/o:    352.9µs, running sum      1.1ms)
+Day 08 took    478.5µs to compute (running sum    968.1µs) (with i/o:    493.2µs, running sum      1.6ms)
 
-         Total time for 8 days:     1.016464ms (avg per day  127.058µs, med:   45.792µs, min:    1.863µs, max:  476.131µs)
-Total time with i/o for 8 days:     1.510115ms (avg per day  188.764µs, med:  116.848µs, min:   44.063µs, max:  498.332µs)
+         Total time for 8 days:    968.1µs (avg per day    121.0µs, med:     51.1µs, min:      1.6µs, max:    478.5µs)
+Total time with i/o for 8 days:      1.6ms (avg per day    201.0µs, med:    149.6µs, min:     55.6µs, max:    493.2µs)
 ```
 
 # previous solutions
