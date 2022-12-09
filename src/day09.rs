@@ -1,19 +1,7 @@
-use anyhow::Result;
-use std::collections::HashSet;
+use anyhow::{anyhow, Error, Result};
+use rustc_hash::FxHashSet as HashSet;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
-
-const TOUCHING_D: [Pos; 9] = [
-    Pos { x: 0, y: 0 },
-    Pos { x: 1, y: 0 },
-    Pos { x: -1, y: 0 },
-    Pos { x: 0, y: 1 },
-    Pos { x: 0, y: -1 },
-    Pos { x: 1, y: 1 },
-    Pos { x: 1, y: -1 },
-    Pos { x: -1, y: 1 },
-    Pos { x: -1, y: -1 },
-];
 
 const TWO_STEPS: [(Pos, Pos); 4] = [
     (Pos { x: 2, y: 0 }, Pos { x: 1, y: 0 }),
@@ -37,10 +25,7 @@ struct Pos {
 
 impl Pos {
     fn is_touching(&self, other: &Self) -> bool {
-        TOUCHING_D
-            .into_iter()
-            .map(|delta| self.move_by(&delta))
-            .any(|p| p == *other)
+        (self.x - other.x).abs() <= 1 && (self.y - other.y).abs() <= 1
     }
 
     fn move_by(&self, delta: &Self) -> Self {
@@ -89,21 +74,21 @@ const DIR_2_DELTA: [Pos; 4] = [
 ];
 
 impl FromStr for Dir {
-    type Err = anyhow::Error;
+    type Err = Error;
 
-    fn from_str(s: &str) -> anyhow::Result<Self> {
+    fn from_str(s: &str) -> Result<Self> {
         match s {
             "R" => Ok(Self::R),
             "U" => Ok(Self::U),
             "L" => Ok(Self::L),
             "D" => Ok(Self::D),
-            _ => unreachable!(),
+            s => Err(anyhow!("unexpected string: '{s}'")),
         }
     }
 }
 
 fn simulate_and_find_tail_positions(mut rope: Vec<Pos>, moves: &[(Dir, usize)]) -> HashSet<Pos> {
-    let mut seen = HashSet::new();
+    let mut seen = HashSet::default();
     seen.insert(*rope.last().unwrap());
 
     for (dir, count) in moves {
