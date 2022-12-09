@@ -3,24 +3,10 @@ use rustc_hash::FxHashSet as HashSet;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
-const TWO_STEPS: [(Pos, Pos); 4] = [
-    (Pos { x: 2, y: 0 }, Pos { x: 1, y: 0 }),
-    (Pos { x: -2, y: 0 }, Pos { x: -1, y: 0 }),
-    (Pos { x: 0, y: 2 }, Pos { x: 0, y: 1 }),
-    (Pos { x: 0, y: -2 }, Pos { x: 0, y: -1 }),
-];
-
-const DIAGS: [Pos; 4] = [
-    Pos { x: 1, y: 1 },
-    Pos { x: 1, y: -1 },
-    Pos { x: -1, y: -1 },
-    Pos { x: -1, y: 1 },
-];
-
 #[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
 struct Pos {
-    x: i32,
-    y: i32,
+    x: i16,
+    y: i16,
 }
 
 impl Pos {
@@ -28,7 +14,7 @@ impl Pos {
         (self.x - other.x).abs() <= 1 && (self.y - other.y).abs() <= 1
     }
 
-    fn move_by(&self, delta: &Self) -> Self {
+    fn move_by(&self, delta: Self) -> Self {
         Self {
             x: self.x + delta.x,
             y: self.y + delta.y,
@@ -39,22 +25,15 @@ impl Pos {
         if self.is_touching(target) {
             return *self;
         }
-        for (dir, to_move) in TWO_STEPS {
-            if self.move_by(&dir) == *target {
-                return self.move_by(&to_move);
-            }
-        }
-        for dir in DIAGS {
-            let next = self.move_by(&dir);
-            if next.is_touching(target) {
-                return next;
-            }
-        }
-        unreachable!();
+        let diff = Pos {
+            x: (target.x - self.x).signum(),
+            y: (target.y - self.y).signum(),
+        };
+        self.move_by(diff)
     }
 
     fn move_dir(&self, dir: &Dir) -> Self {
-        self.move_by(&DIR_2_DELTA[*dir as usize])
+        self.move_by(DIR_2_DELTA[*dir as usize])
     }
 }
 
