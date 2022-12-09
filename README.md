@@ -2,18 +2,18 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took     1.8µs to compute (rsum     1.8µs) (with i/o:   108.8µs, rsum   108.8µs)
-Day 02 took    47.5µs to compute (rsum    49.3µs) (with i/o:   177.3µs, rsum   286.1µs)
-Day 03 took    59.5µs to compute (rsum   108.8µs) (with i/o:   140.2µs, rsum   426.3µs)
-Day 04 took     7.4µs to compute (rsum   116.3µs) (with i/o:   149.4µs, rsum   575.7µs)
-Day 05 took    26.1µs to compute (rsum   142.4µs) (with i/o:   120.5µs, rsum   696.2µs)
-Day 06 took    54.5µs to compute (rsum   196.9µs) (with i/o:    55.7µs, rsum   751.9µs)
-Day 07 took   296.4µs to compute (rsum   493.2µs) (with i/o:   353.6µs, rsum     1.1ms)
-Day 08 took   493.0µs to compute (rsum   986.2µs) (with i/o:   505.1µs, rsum     1.6ms)
-Day 09 took     1.1ms to compute (rsum     2.1ms) (with i/o:     1.2ms, rsum     2.8ms)
+Day 01 took     1.9µs to compute (rsum     1.9µs) (with i/o:   108.2µs, rsum   108.2µs)
+Day 02 took    47.3µs to compute (rsum    49.2µs) (with i/o:   162.9µs, rsum   271.1µs)
+Day 03 took    67.9µs to compute (rsum   117.1µs) (with i/o:   126.9µs, rsum   398.1µs)
+Day 04 took     7.5µs to compute (rsum   124.6µs) (with i/o:   139.0µs, rsum   537.0µs)
+Day 05 took    25.1µs to compute (rsum   149.7µs) (with i/o:   108.5µs, rsum   645.5µs)
+Day 06 took    39.3µs to compute (rsum   189.0µs) (with i/o:    40.1µs, rsum   685.6µs)
+Day 07 took   290.2µs to compute (rsum   479.2µs) (with i/o:   338.4µs, rsum     1.0ms)
+Day 08 took   488.7µs to compute (rsum   967.8µs) (with i/o:   498.9µs, rsum     1.5ms)
+Day 09 took   657.0µs to compute (rsum     1.6ms) (with i/o:   784.5µs, rsum     2.3ms)
 
-         Total time for 9 days:     2.1ms (avg per day   229.5µs, med:    54.5µs, min:     1.8µs, max:     1.1ms)
-Total time with i/o for 9 days:     2.8ms (avg per day   314.1µs, med:   149.4µs, min:    55.7µs, max:     1.2ms)
+         Total time for 9 days:     1.6ms (avg per day   180.5µs, med:    47.3µs, min:     1.9µs, max:   657.0µs)
+Total time with i/o for 9 days:     2.3ms (avg per day   256.4µs, med:   139.0µs, min:    40.1µs, max:   784.5µs)
 ```
 
 Day 9 recordings: [twitch](https://www.twitch.tv/videos/1674217005), [youtube](https://youtu.be/2VJgFk-mDRg)
