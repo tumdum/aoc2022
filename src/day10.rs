@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug, Clone, Copy)]
 enum Op {
     Noop,
-    Addx(i64),
+    Addx(i32),
 }
 
 impl Op {
@@ -21,9 +21,9 @@ impl FromStr for Op {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> anyhow::Result<Self> {
-        let s: Vec<_> = s.split(' ').collect();
-        match s[0] {
-            "addx" => Ok(Self::Addx(s[1].parse().unwrap())),
+        let mut s = s.split(' ');
+        match s.next().unwrap() {
+            "addx" => Ok(Self::Addx(s.next().unwrap().parse().unwrap())),
             "noop" => Ok(Self::Noop),
             s => Err(anyhow::anyhow!("unexpected '{s}'")),
         }
@@ -68,15 +68,15 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         xs.push(x);
     }
 
-    let idxs = [20i64, 60, 100, 140, 180, 220];
+    let idxs = [20i32, 60, 100, 140, 180, 220];
     let part1 = idxs
         .into_iter()
         .map(|i| xs[(i - 1) as usize] * i)
-        .sum::<i64>();
+        .sum::<i32>();
 
     let mut screen = vec!['X'; 240];
 
-    for c in 0i64..240 {
+    for c in 0i32..240 {
         let cc = c % 40;
         screen[c as usize] = if (xs[c as usize] - cc).abs() <= 1 {
             '#'
