@@ -2,23 +2,25 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took     1.7µs to compute (rsum     1.7µs) (with i/o:   108.3µs, rsum   108.3µs)
-Day 02 took    47.6µs to compute (rsum    49.4µs) (with i/o:   165.7µs, rsum   274.0µs)
-Day 03 took    62.9µs to compute (rsum   112.2µs) (with i/o:   120.6µs, rsum   394.6µs)
-Day 04 took     6.9µs to compute (rsum   119.2µs) (with i/o:   180.2µs, rsum   574.8µs)
-Day 05 took    25.4µs to compute (rsum   144.6µs) (with i/o:   109.5µs, rsum   684.3µs)
-Day 06 took    42.6µs to compute (rsum   187.2µs) (with i/o:    43.4µs, rsum   727.7µs)
-Day 07 took   303.2µs to compute (rsum   490.5µs) (with i/o:   342.0µs, rsum     1.1ms)
-Day 08 took   463.3µs to compute (rsum   953.8µs) (with i/o:   474.1µs, rsum     1.5ms)
-Day 09 took   667.3µs to compute (rsum     1.6ms) (with i/o:   793.4µs, rsum     2.3ms)
-Day 10 took     2.7µs to compute (rsum     1.6ms) (with i/o:    15.2µs, rsum     2.4ms)
+Day 01 took     1.6µs to compute (rsum     1.6µs) (with i/o:   106.4µs, rsum   106.4µs)
+Day 02 took    47.0µs to compute (rsum    48.6µs) (with i/o:   159.4µs, rsum   265.8µs)
+Day 03 took    68.4µs to compute (rsum   116.9µs) (with i/o:   126.1µs, rsum   391.9µs)
+Day 04 took     7.7µs to compute (rsum   124.7µs) (with i/o:   137.0µs, rsum   528.9µs)
+Day 05 took    25.5µs to compute (rsum   150.2µs) (with i/o:   108.6µs, rsum   637.5µs)
+Day 06 took    40.9µs to compute (rsum   191.1µs) (with i/o:    41.9µs, rsum   679.5µs)
+Day 07 took   307.1µs to compute (rsum   498.1µs) (with i/o:   345.9µs, rsum     1.0ms)
+Day 08 took   478.4µs to compute (rsum   976.6µs) (with i/o:   489.4µs, rsum     1.5ms)
+Day 09 took   709.9µs to compute (rsum     1.7ms) (with i/o:   828.5µs, rsum     2.3ms)
+Day 10 took     2.3µs to compute (rsum     1.7ms) (with i/o:    12.3µs, rsum     2.4ms)
+Day 11 took    17.5ms to compute (rsum    19.2ms) (with i/o:    17.6ms, rsum    19.9ms)
 
-         Total time for 10 days:     1.6ms (avg per day   162.4µs, med:    45.1µs, min:     1.7µs, max:   667.3µs)
-Total time with i/o for 10 days:     2.4ms (avg per day   235.2µs, med:   143.1µs, min:    15.2µs, max:   793.4µs)
+         Total time for 11 days:    19.2ms (avg per day     1.7ms, med:    47.0µs, min:     1.6µs, max:    17.5ms)
+Total time with i/o for 11 days:    19.9ms (avg per day     1.8ms, med:   137.0µs, min:    12.3µs, max:    17.6ms)
 ```
 
 - Day 9 recordings: [twitch](https://www.twitch.tv/videos/1674217005), [youtube](https://youtu.be/2VJgFk-mDRg)
 - Day 10 recordings: [twitch](https://www.twitch.tv/videos/1675094161), [youtube](https://youtu.be/7kfVJo7-z5E)
+- Day 11 recordings: [twitch](https://www.twitch.tv/videos/1676011383), [youtube](https://youtu.be/v3ZifmH50Q4)
 
 # previous solutions
 
