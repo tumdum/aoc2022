@@ -1,17 +1,19 @@
 use anyhow::{anyhow, Error, Result};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
+use num_bigint::BigUint;
+use num_traits::{Zero, One};
 
 #[derive(Clone, Debug)]
 struct Test {
-    divisible_by: u64,
+    divisible_by: BigUint,
     if_true: usize,
     if_false: usize,
 }
 
 impl Test {
-    fn apply(&self, wl: u64) -> usize {
-        if wl % self.divisible_by == 0 {
+    fn apply(&self, wl: &BigUint) -> usize {
+        if wl % &self.divisible_by == Zero::zero() {
             self.if_true
         } else {
             self.if_false
@@ -19,7 +21,7 @@ impl Test {
     }
 
     fn parse(lines: &[&str]) -> Self {
-        let divisible_by: u64 = lines[0]
+        let divisible_by: BigUint = lines[0]
             .strip_prefix("  Test: divisible by ")
             .unwrap()
             .parse()
@@ -44,15 +46,15 @@ impl Test {
 
 #[derive(Clone, Debug)]
 enum Num {
-    N(u64),
+    N(BigUint),
     Old,
 }
 
 impl Num {
-    fn eval(&self, wl: u64) -> u64 {
+    fn eval(&self, wl: &BigUint) -> BigUint {
         match self {
-            Self::N(n) => *n,
-            Self::Old => wl,
+            Self::N(n) => n.clone(),
+            Self::Old => wl.clone(),
         }
     }
 }
@@ -75,7 +77,7 @@ enum Operation {
 }
 
 impl Operation {
-    fn apply(&self, wl: u64) -> u64 {
+    fn apply(&self, wl: &BigUint) -> BigUint {
         match self {
             Self::Add(n) => n.eval(wl) + wl,
             Self::Times(n) => n.eval(wl) * wl,
@@ -98,7 +100,7 @@ impl FromStr for Operation {
 
 #[derive(Clone, Debug)]
 struct Monkey {
-    items: Vec<u64>,
+    items: Vec<BigUint>,
     operation: Operation,
     test: Test,
     inspect_count: usize,
@@ -107,7 +109,7 @@ struct Monkey {
 impl Monkey {
     fn parse(lines: &[&str]) -> Self {
         let starting = lines[1];
-        let items: Vec<u64> = starting
+        let items: Vec<BigUint> = starting
             .strip_prefix("  Starting items: ")
             .unwrap()
             .split(", ")
@@ -125,24 +127,22 @@ impl Monkey {
 }
 
 fn simulate(mut monkeys: Vec<Monkey>, part: usize) -> usize {
-    let modulo: u64 = if part == 1 {
-        u64::max_value()
-    } else {
-        monkeys.iter().map(|m| m.test.divisible_by).product()
-    };
     let rounds = if part == 1 { 20 } else { 10000 };
-    let divisor = if part == 1 { 3 } else { 1 };
-    for _ in 1..=rounds {
+    let divisor : BigUint = (if part == 1 { 3usize } else { 1usize }).into();
+    for r in 1..=rounds {
+        let t = Instant::now();
         for m in 0..monkeys.len() {
             monkeys[m].inspect_count += monkeys[m].items.len();
             for i in 0..monkeys[m].items.len() {
-                let item = monkeys[m].items[i];
-                let worry_level = monkeys[m].operation.apply(item) / divisor;
-                let target_monkey = monkeys[m].test.apply(worry_level);
-                monkeys[target_monkey].items.push(worry_level % modulo);
+                let item = &monkeys[m].items[i];
+                let worry_level = monkeys[m].operation.apply(item) / &divisor;
+                let target_monkey = monkeys[m].test.apply(&worry_level);
+                monkeys[target_monkey].items.push(worry_level);
             }
             monkeys[m].items.clear();
         }
+        let max_bits = monkeys.iter().flat_map(|m| m.items.iter().map(|w| w.bits()).max()).max().unwrap();
+        println!("{r}/{rounds} done in {:?}, max bits of items: {max_bits}", t.elapsed());
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
     inspect_counts.sort_unstable();
@@ -156,7 +156,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     let s = Instant::now();
 
-    let part1 = simulate(monkeys.clone(), 1);
+    let part1 = dbg!(simulate(monkeys.clone(), 1));
     let part2 = simulate(monkeys, 2);
 
     let e = s.elapsed();
