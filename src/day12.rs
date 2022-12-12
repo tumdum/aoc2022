@@ -101,13 +101,12 @@ fn find_path_len(
     let mut todo = BinaryHeap::with_capacity(64);
     todo.push(Reverse(State::new(start, start.get(m).unwrap(), 0)));
     best[start.row as usize][start.col as usize] = Some((start, 0));
-    'out: while !todo.is_empty() {
-        let state = todo.pop().unwrap().0;
-        let neighbours = state.next.get_neighbours(m);
-        let unseen_neighbours = neighbours
-            .into_iter()
-            .filter(|(_, h)| can_move(state.height, *h));
-        for (pos, h) in unseen_neighbours {
+    'out: while let Some(Reverse(state)) = todo.pop() {
+        for (pos, h) in state
+            .next
+            .get_neighbours(m)
+            .filter(|(_, h)| can_move(state.height, *h))
+        {
             let next_path_len = state.path_len + 1;
             if best[pos.row as usize][pos.col as usize]
                 .map(|(_, h)| h)
@@ -180,14 +179,14 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     Ok(e)
 }
 
-#[cfg(tests)]
-mod test {
+#[cfg(test)]
+mod tests {
     use super::*;
 
     #[test]
     fn can_move_test() {
-        assert!(can_move('z', 'a'));
-        assert!(can_move('m', 'n'));
-        assert!(!can_move('m', 'o'));
+        assert!(can_move(b'z', b'a'));
+        assert!(can_move(b'm', b'n'));
+        assert!(!can_move(b'm', b'o'));
     }
 }
