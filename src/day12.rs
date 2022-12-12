@@ -1,4 +1,5 @@
 use anyhow::Result;
+use itertools::iproduct;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::time::{Duration, Instant};
@@ -146,7 +147,6 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let part1 = find_path_len(start, target, &m, can_move, &mut best).unwrap();
 
     let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    let mut part2 = usize::max_value();
     let can_move_inv = |a, b| can_move(b, a);
     // Run only to fill in 'best'
     find_path_len(
@@ -156,15 +156,11 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         can_move_inv,
         &mut best,
     );
-    for row in 0..m.len() {
-        for col in 0..m[row].len() {
-            if m[row][col] == b'a' {
-                if let Some((_, l)) = best[row][col] {
-                    part2 = part2.min(l as usize);
-                }
-            }
-        }
-    }
+    let part2 = iproduct!(0..m.len(), 0..m[0].len())
+        .filter(|(row, col)| m[*row][*col] == b'a')
+        .filter_map(|(row, col)| best[row][col].map(|(_, l)| l))
+        .min()
+        .unwrap();
 
     let e = s.elapsed();
 
