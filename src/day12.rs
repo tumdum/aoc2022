@@ -1,7 +1,6 @@
 use anyhow::Result;
 use itertools::iproduct;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
 const NEIGHBOURS_OFF: [Pos; 4] = [
@@ -100,10 +99,12 @@ fn find_path_len(
     pred: impl Fn(u8, u8) -> bool,
 ) -> Vec<Vec<Option<(Pos, u32)>>> {
     let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    let mut todo = BinaryHeap::with_capacity(64);
-    todo.push(Reverse(State::new(start, start.get(m).unwrap(), 0)));
+    // Instead of Dijkstra that would use here BinaryHeap, use VecDeque to get
+    // simple bfs that make this problem run much faster.
+    let mut todo = VecDeque::with_capacity(64);
+    todo.push_back(State::new(start, start.get(m).unwrap(), 0));
     best[start.row as usize][start.col as usize] = Some((start, 0));
-    'out: while let Some(Reverse(state)) = todo.pop() {
+    'out: while let Some(state) = todo.pop_front() {
         for (pos, h) in state
             .next
             .get_neighbours(m)
@@ -118,7 +119,7 @@ fn find_path_len(
                 continue;
             }
             best[pos.row as usize][pos.col as usize] = Some((state.next, next_path_len));
-            todo.push(Reverse(State::new(pos, h, next_path_len)));
+            todo.push_back(State::new(pos, h, next_path_len));
             if pos == target {
                 break 'out;
             }
