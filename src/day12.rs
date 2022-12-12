@@ -98,8 +98,8 @@ fn find_path_len(
     target: Pos,
     m: &[Vec<u8>],
     pred: impl Fn(u8, u8) -> bool,
-    best: &mut [Vec<Option<(Pos, u32)>>],
-) -> Option<usize> {
+) -> Vec<Vec<Option<(Pos, u32)>>> {
+    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
     let mut todo = BinaryHeap::with_capacity(64);
     todo.push(Reverse(State::new(start, start.get(m).unwrap(), 0)));
     best[start.row as usize][start.col as usize] = Some((start, 0));
@@ -125,10 +125,7 @@ fn find_path_len(
         }
     }
 
-    target
-        .get(best)
-        .flatten()
-        .and_then(|(_, l)| Some(l as usize))
+    best
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -142,19 +139,9 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     *start.get_mut(&mut m).unwrap() = b'a';
     *target.get_mut(&mut m).unwrap() = b'z';
 
-    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    let part1 = find_path_len(start, target, &m, can_move, &mut best).unwrap();
-
-    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
     let can_move_inv = |a, b| can_move(b, a);
-    // Run only to fill in 'best'
-    find_path_len(
-        target,
-        Pos { row: -10, col: -10 },
-        &m,
-        can_move_inv,
-        &mut best,
-    );
+    let best = find_path_len(target, Pos { row: -10, col: -10 }, &m, can_move_inv);
+    let part1 = start.get(&best).unwrap().unwrap().1 as usize;
     let part2 = iproduct!(0..m.len(), 0..m[0].len())
         .filter(|(row, col)| m[*row][*col] == b'a')
         .filter_map(|(row, col)| best[row][col].map(|(_, l)| l))
