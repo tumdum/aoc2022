@@ -123,19 +123,7 @@ fn find_path_len(
         }
     }
 
-    best[target.row as usize][target.col as usize]?;
-
-    let mut cur = target;
-    let mut ret = 0;
-    while let Some((prev, _)) = best[cur.row as usize][cur.col as usize] {
-        if cur == prev {
-            break;
-        }
-        cur = prev;
-        ret += 1;
-    }
-
-    Some(ret)
+    best[target.row as usize][target.col as usize].map(|(_, l)| l as usize)
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
