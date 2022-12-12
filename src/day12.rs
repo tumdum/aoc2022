@@ -44,8 +44,7 @@ impl Pos {
         NEIGHBOURS_OFF
             .into_iter()
             .map(move |off| this.move_by(off))
-            .filter(move |pos| pos.is_in_bounds(m))
-            .map(move |pos| (pos, pos.get(m).unwrap()))
+            .filter_map(move |pos| pos.get(m).map(|h| (pos, h)))
     }
 
     fn move_by(&self, offset: Pos) -> Pos {
@@ -78,13 +77,13 @@ fn can_move(from: u8, to: u8) -> bool {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct State {
-    path_len: usize,
+    path_len: u32,
     height: u8,
     next: Pos,
 }
 
 impl State {
-    fn new(next: Pos, height: u8, path_len: usize) -> Self {
+    fn new(next: Pos, height: u8, path_len: u32) -> Self {
         Self {
             next,
             height,
@@ -94,11 +93,10 @@ impl State {
 }
 
 fn path_len(start: Pos, target: Pos, m: &[Vec<u8>]) -> Option<usize> {
-    let mut best: Vec<Vec<Option<Pos>>> = vec![vec![None; m[0].len()]; m.len()];
-    let mut best_len = vec![vec![usize::max_value(); m[0].len()]; m.len()];
+    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
     let mut todo = BinaryHeap::new();
     todo.push(Reverse(State::new(start, start.get(m).unwrap(), 0)));
-    best_len[start.row as usize][start.col as usize] = 0;
+    best[start.row as usize][start.col as usize] = Some((start, 0));
     'out: while !todo.is_empty() {
         let state = todo.pop().unwrap().0;
         let neighbours = state.next.get_neighbours(m);
@@ -107,12 +105,15 @@ fn path_len(start: Pos, target: Pos, m: &[Vec<u8>]) -> Option<usize> {
             .filter(|(_, h)| can_move(state.height, *h));
         for (pos, h) in unseen_neighbours {
             let next_path_len = state.path_len + 1;
-            if best_len[pos.row as usize][pos.col as usize] <= next_path_len {
+            if best[pos.row as usize][pos.col as usize]
+                .map(|(_, h)| h)
+                .unwrap_or(u32::max_value())
+                <= next_path_len
+            {
                 continue;
             }
-            best[pos.row as usize][pos.col as usize] = Some(state.next);
+            best[pos.row as usize][pos.col as usize] = Some((state.next, next_path_len));
             todo.push(Reverse(State::new(pos, h, next_path_len)));
-            best_len[pos.row as usize][pos.col as usize] = next_path_len;
             if pos == target {
                 break 'out;
             }
@@ -124,7 +125,10 @@ fn path_len(start: Pos, target: Pos, m: &[Vec<u8>]) -> Option<usize> {
     let mut path = vec![target];
     let mut cur = target;
 
-    while let Some(prev) = best[cur.row as usize][cur.col as usize] {
+    while let Some((prev, _)) = best[cur.row as usize][cur.col as usize] {
+        if cur == prev {
+            break;
+        }
         cur = prev;
         path.push(prev);
     }
