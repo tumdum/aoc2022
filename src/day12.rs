@@ -92,9 +92,13 @@ impl State {
     }
 }
 
-fn path_len(start: Pos, target: Pos, m: &[Vec<u8>]) -> Option<usize> {
-    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    let mut todo = BinaryHeap::new();
+fn find_path_len(
+    start: Pos,
+    target: Pos,
+    m: &[Vec<u8>],
+    best: &mut [Vec<Option<(Pos, u32)>>],
+) -> Option<usize> {
+    let mut todo = BinaryHeap::with_capacity(64);
     todo.push(Reverse(State::new(start, start.get(m).unwrap(), 0)));
     best[start.row as usize][start.col as usize] = Some((start, 0));
     'out: while !todo.is_empty() {
@@ -122,18 +126,17 @@ fn path_len(start: Pos, target: Pos, m: &[Vec<u8>]) -> Option<usize> {
 
     best[target.row as usize][target.col as usize]?;
 
-    let mut path = vec![target];
     let mut cur = target;
-
+    let mut ret = 0;
     while let Some((prev, _)) = best[cur.row as usize][cur.col as usize] {
         if cur == prev {
             break;
         }
         cur = prev;
-        path.push(prev);
+        ret += 1;
     }
 
-    Some(path.len() - 1)
+    Some(ret)
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -147,7 +150,8 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     *start.get_mut(&mut m).unwrap() = b'a';
     *target.get_mut(&mut m).unwrap() = b'z';
 
-    let part1 = path_len(start, target, &m).unwrap();
+    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
+    let part1 = find_path_len(start, target, &m, &mut best).unwrap();
     let mut part2 = usize::max_value();
     for row in 0..m.len() {
         for col in 0..m[row].len() {
@@ -156,7 +160,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                     row: row as i32,
                     col: col as i32,
                 };
-                if let Some(l) = path_len(start, target, &m) {
+                if let Some(l) = find_path_len(start, target, &m, &mut best) {
                     part2 = part2.min(l);
                 }
             }
