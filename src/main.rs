@@ -83,10 +83,12 @@ fn main() {
                 Some(path) => File::open(path).unwrap(),
                 None => File::open(format!("inputs/day{:02}", i + 1)).unwrap(),
             };
+
+            let start = Instant::now();
+
             let mapped_input = unsafe { MmapOptions::new().map(&input_file).unwrap() };
             let input = std::str::from_utf8(&mapped_input).unwrap();
 
-            let start = Instant::now();
             let t = match solution(input, !opt.skip_verification, !opt.skip_output) {
                 Ok(t) => t,
                 Err(e) => {
