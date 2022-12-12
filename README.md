@@ -2,25 +2,27 @@
 solutions for advent of code 2022
 
 ```
-Day 01 took     1.6µs to compute (rsum     1.6µs) (with i/o:   106.4µs, rsum   106.4µs)
-Day 02 took    47.0µs to compute (rsum    48.6µs) (with i/o:   159.4µs, rsum   265.8µs)
-Day 03 took    68.4µs to compute (rsum   116.9µs) (with i/o:   126.1µs, rsum   391.9µs)
-Day 04 took     7.7µs to compute (rsum   124.7µs) (with i/o:   137.0µs, rsum   528.9µs)
-Day 05 took    25.5µs to compute (rsum   150.2µs) (with i/o:   108.6µs, rsum   637.5µs)
-Day 06 took    40.9µs to compute (rsum   191.1µs) (with i/o:    41.9µs, rsum   679.5µs)
-Day 07 took   307.1µs to compute (rsum   498.1µs) (with i/o:   345.9µs, rsum     1.0ms)
-Day 08 took   478.4µs to compute (rsum   976.6µs) (with i/o:   489.4µs, rsum     1.5ms)
-Day 09 took   709.9µs to compute (rsum     1.7ms) (with i/o:   828.5µs, rsum     2.3ms)
-Day 10 took     2.3µs to compute (rsum     1.7ms) (with i/o:    12.3µs, rsum     2.4ms)
-Day 11 took    17.5ms to compute (rsum    19.2ms) (with i/o:    17.6ms, rsum    19.9ms)
+Day 01 took     1.7µs to compute (rsum     1.7µs) (with i/o:   110.4µs, rsum   110.4µs)
+Day 02 took    47.4µs to compute (rsum    49.1µs) (with i/o:   173.7µs, rsum   284.1µs)
+Day 03 took    67.4µs to compute (rsum   116.5µs) (with i/o:   125.7µs, rsum   409.7µs)
+Day 04 took     7.3µs to compute (rsum   123.8µs) (with i/o:   134.2µs, rsum   544.0µs)
+Day 05 took    25.6µs to compute (rsum   149.4µs) (with i/o:   139.5µs, rsum   683.5µs)
+Day 06 took    40.1µs to compute (rsum   189.4µs) (with i/o:    41.0µs, rsum   724.5µs)
+Day 07 took   291.0µs to compute (rsum   480.4µs) (with i/o:   339.1µs, rsum     1.1ms)
+Day 08 took   468.2µs to compute (rsum   948.7µs) (with i/o:   479.0µs, rsum     1.5ms)
+Day 09 took   721.4µs to compute (rsum     1.7ms) (with i/o:   840.4µs, rsum     2.4ms)
+Day 10 took     2.4µs to compute (rsum     1.7ms) (with i/o:    13.1µs, rsum     2.4ms)
+Day 11 took    17.3ms to compute (rsum    19.0ms) (with i/o:    17.3ms, rsum    19.7ms)
+Day 12 took   247.0µs to compute (rsum    19.2ms) (with i/o:   253.6µs, rsum    20.0ms)
 
-         Total time for 11 days:    19.2ms (avg per day     1.7ms, med:    47.0µs, min:     1.6µs, max:    17.5ms)
-Total time with i/o for 11 days:    19.9ms (avg per day     1.8ms, med:   137.0µs, min:    12.3µs, max:    17.6ms)
+         Total time for 12 days:    19.2ms (avg per day     1.6ms, med:    57.4µs, min:     1.7µs, max:    17.3ms)
+Total time with i/o for 12 days:    20.0ms (avg per day     1.7ms, med:   156.6µs, min:    13.1µs, max:    17.3ms)
 ```
 
 - Day 9 recordings: [twitch](https://www.twitch.tv/videos/1674217005), [youtube](https://youtu.be/2VJgFk-mDRg)
 - Day 10 recordings: [twitch](https://www.twitch.tv/videos/1675094161), [youtube](https://youtu.be/7kfVJo7-z5E)
 - Day 11 recordings: [twitch](https://www.twitch.tv/videos/1676011383), [youtube](https://youtu.be/v3ZifmH50Q4)
+- Day 12 recordings: [twitch](https://www.twitch.tv/videos/1676907029), [youtube](https://youtu.be/CSsmCRa7Ct8)
 
 # previous solutions
 
