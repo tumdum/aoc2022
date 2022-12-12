@@ -96,6 +96,7 @@ fn find_path_len(
     start: Pos,
     target: Pos,
     m: &[Vec<u8>],
+    pred: impl Fn(u8, u8) -> bool,
     best: &mut [Vec<Option<(Pos, u32)>>],
 ) -> Option<usize> {
     let mut todo = BinaryHeap::with_capacity(64);
@@ -105,7 +106,7 @@ fn find_path_len(
         for (pos, h) in state
             .next
             .get_neighbours(m)
-            .filter(|(_, h)| can_move(state.height, *h))
+            .filter(|(_, h)| pred(state.height, *h))
         {
             let next_path_len = state.path_len + 1;
             if best[pos.row as usize][pos.col as usize]
@@ -123,7 +124,11 @@ fn find_path_len(
         }
     }
 
-    best[target.row as usize][target.col as usize].map(|(_, l)| l as usize)
+    if target.row < 0 || target.col < 0 {
+        None
+    } else {
+        best[target.row as usize][target.col as usize].map(|(_, l)| l as usize)
+    }
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -138,17 +143,24 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     *target.get_mut(&mut m).unwrap() = b'z';
 
     let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    let part1 = find_path_len(start, target, &m, &mut best).unwrap();
+    let part1 = find_path_len(start, target, &m, can_move, &mut best).unwrap();
+
+    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
     let mut part2 = usize::max_value();
+    let can_move_inv = |a, b| can_move(b, a);
+    // Run only to fill in 'best'
+    find_path_len(
+        target,
+        Pos { row: -10, col: -10 },
+        &m,
+        can_move_inv,
+        &mut best,
+    );
     for row in 0..m.len() {
         for col in 0..m[row].len() {
             if m[row][col] == b'a' {
-                let start = Pos {
-                    row: row as i32,
-                    col: col as i32,
-                };
-                if let Some(l) = find_path_len(start, target, &m, &mut best) {
-                    part2 = part2.min(l);
+                if let Some((_, l)) = best[row][col] {
+                    part2 = part2.min(l as usize);
                 }
             }
         }
