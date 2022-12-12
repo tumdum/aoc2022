@@ -25,7 +25,7 @@ impl Pos {
             None
         }
     }
-    fn get(&self, m: &[Vec<u8>]) -> Option<u8> {
+    fn get<T: Copy>(&self, m: &[Vec<T>]) -> Option<T> {
         if self.is_in_bounds(m) {
             Some(m[self.row as usize][self.col as usize])
         } else {
@@ -33,7 +33,7 @@ impl Pos {
         }
     }
 
-    fn is_in_bounds(&self, m: &[Vec<u8>]) -> bool {
+    fn is_in_bounds<T>(&self, m: &[Vec<T>]) -> bool {
         self.row >= 0
             && self.row < m.len() as i32
             && self.col >= 0
@@ -125,11 +125,10 @@ fn find_path_len(
         }
     }
 
-    if target.row < 0 || target.col < 0 {
-        None
-    } else {
-        best[target.row as usize][target.col as usize].map(|(_, l)| l as usize)
-    }
+    target
+        .get(best)
+        .flatten()
+        .and_then(|(_, l)| Some(l as usize))
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
