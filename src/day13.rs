@@ -1,4 +1,7 @@
 use anyhow::Result;
+use nom::bytes::complete::tag;
+use nom::character::complete::{char, u8};
+use nom::{branch::alt, multi::separated_list0, sequence::delimited, IResult};
 use std::cmp::Ordering;
 use std::time::{Duration, Instant};
 
@@ -9,6 +12,19 @@ enum Packet {
 }
 
 use Packet::*;
+
+fn packet(i: &str) -> IResult<&str, Packet> {
+    fn num(input: &str) -> IResult<&str, Packet> {
+        u8(input).map(|(rest, n)| (rest, Num(n)))
+    }
+    fn packets(input: &str) -> IResult<&str, Vec<Packet>> {
+        separated_list0(tag(","), packet)(input)
+    }
+    fn list(input: &str) -> IResult<&str, Packet> {
+        delimited(char('['), packets, char(']'))(input).map(|(rest, l)| (rest, List(l)))
+    }
+    alt((list, num))(i)
+}
 
 impl Ord for Packet {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -48,51 +64,9 @@ impl PartialOrd for Packet {
 }
 
 fn parse(s: &str) -> Packet {
-    let s = s.chars().collect::<Vec<_>>();
-    let (p, rest) = parse_list(&s);
+    let (rest, packet) = packet(s).unwrap();
     debug_assert!(rest.is_empty());
-    p
-}
-
-fn parse_num(l: &[char]) -> (Packet, &[char]) {
-    let mut i = 0;
-    while i < l.len() && l[i].is_ascii_digit() {
-        i += 1;
-    }
-    assert!(i > 0);
-    let mut ret = 0u8;
-    let mut off = 1;
-    for c in l[..i].iter().rev() {
-        ret += (*c as u8 - b'0') * off;
-        off *= 10;
-    }
-    (Num(ret), &l[i..])
-}
-
-fn parse_list(l: &[char]) -> (Packet, &[char]) {
-    debug_assert_eq!('[', l[0]);
-
-    let mut l = &l[1..];
-    let mut v = Vec::with_capacity(8);
-
-    loop {
-        match l[0] {
-            ']' => break,
-            ',' => l = &l[1..],
-            '[' => {
-                let (ll, rest) = parse_list(l);
-                v.push(ll);
-                l = rest;
-            }
-            _ => {
-                let (n, rest) = parse_num(l);
-                v.push(n);
-                l = rest;
-            }
-        }
-    }
-    debug_assert_eq!(']', l[0]);
-    (List(v), &l[1..])
+    packet
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
@@ -145,42 +119,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_num_test() {
-        let input = "42,test".chars().collect::<Vec<_>>();
-        let (n, rest) = parse_num(&input);
-        assert_eq!(Num(42), n);
-        assert_eq!(",test".to_owned(), rest.iter().collect::<String>());
-
-        let input = "42".chars().collect::<Vec<_>>();
-        let (n, rest) = parse_num(&input);
-        assert_eq!(Num(42), n);
-        assert_eq!("".to_owned(), rest.iter().collect::<String>());
-    }
-
-    #[test]
-    fn parse_list_test() {
-        let input = "[42,13]".chars().collect::<Vec<_>>();
-        let (l, rest) = parse_list(&input);
-        assert_eq!(List(vec![Num(42), Num(13),]), l);
-        assert!(rest.is_empty());
-    }
-
-    #[test]
-    fn parse_list_nested() {
-        let input = "[42,[13,3]]".chars().collect::<Vec<_>>();
-        let (l, rest) = parse_list(&input);
-        assert_eq!(List(vec![Num(42), List(vec![Num(13), Num(3),]),]), l);
-        assert!(rest.is_empty());
-    }
-
-    #[test]
-    fn parse_list_nested2() {
-        let input = "[[42],[13,3]]".chars().collect::<Vec<_>>();
-        let (l, rest) = parse_list(&input);
+    fn parser_test() {
+        assert_eq!(Num(123), packet("123").unwrap().1);
+        assert_eq!(List(vec![]), packet("[]").unwrap().1);
+        assert_eq!(List(vec![Num(42)]), packet("[42]").unwrap().1);
         assert_eq!(
-            List(vec![List(vec![Num(42)]), List(vec![Num(13), Num(3),]),]),
-            l
+            List(vec![List(vec![]), Num(42)]),
+            packet("[[],42]").unwrap().1
         );
-        assert!(rest.is_empty());
     }
 }
