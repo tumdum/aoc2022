@@ -1,5 +1,7 @@
-# aoc2022
-solutions for advent of code 2022
+[![Rust](https://github.com/tumdum/aoc2022/actions/workflows/rust.yml/badge.svg)](https://github.com/tumdum/aoc2022/actions/workflows/rust.yml)
+
+# Advent of Code solutions 2022
+Solutions for Advent of Code 2022, target for total runtime is <1s.
 
 ```
 Day 01 took     1.7µs to compute (rsum     1.7µs) (with i/o:   126.0µs, rsum   126.0µs)
