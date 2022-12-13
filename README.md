@@ -24,6 +24,7 @@ Total time with i/o for 13 days:    20.2ms (avg per day     1.6ms, med:   155.1Â
 - Day 10 recordings: [twitch](https://www.twitch.tv/videos/1675094161), [youtube](https://youtu.be/7kfVJo7-z5E)
 - Day 11 recordings: [twitch](https://www.twitch.tv/videos/1676011383), [youtube](https://youtu.be/v3ZifmH50Q4)
 - Day 12 recordings: [twitch](https://www.twitch.tv/videos/1676907029), [youtube](https://youtu.be/CSsmCRa7Ct8)
+- Day 13 recordings: [twitch](https://www.twitch.tv/videos/1677748426), [youtube](https://youtu.be/8z4dBItdnhY) (Obs crashed in the middle so only ~1h recorded)
 
 # previous solutions
 
