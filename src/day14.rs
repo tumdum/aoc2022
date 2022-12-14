@@ -72,10 +72,20 @@ fn simulate(rocks: &HashSet<Pos>, floor_y: Option<i32>) -> usize {
     for pos in rocks {
         cave[pos.y as usize][pos.x as usize] = State::Stone;
     }
+    let mut last_path_cache = vec![start];
     for i in 0.. {
         let mut sand = start;
+        // Sand will travel the same way almost till the end
+        while let Some(pos) = last_path_cache.pop() {
+            if cave[pos.y as usize][pos.x as usize] == State::Empty {
+                sand = pos;
+                break;
+            }
+        }
+        last_path_cache.push(sand);
         while let Some(p) = sand.next(&cave, floor_y) {
             sand = p;
+            last_path_cache.push(sand);
             if floor_y.is_none() && sand.y > max_y {
                 return i;
             }
@@ -92,11 +102,11 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let cave: HashSet<Pos> = input
         .lines()
         .map(parse)
-        .flat_map(|f| {
-            f.windows(2)
-                .flat_map(|w| {
-                    let (dir, n) = w[1].dir(w[0]);
-                    iterate(w[0], move |p| p.add(dir)).take(n + 1)
+        .flat_map(|path| {
+            path.windows(2)
+                .flat_map(|segment| {
+                    let (dir, n) = segment[1].dir(segment[0]);
+                    iterate(segment[0], move |p| p.add(dir)).take(n + 1)
                 })
                 .collect::<Vec<_>>()
         })
