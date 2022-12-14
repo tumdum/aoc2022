@@ -2,6 +2,7 @@ use anyhow::Result;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, u8};
 use nom::{branch::alt, multi::separated_list0, sequence::delimited, IResult};
+use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::time::{Duration, Instant};
 
@@ -28,7 +29,10 @@ fn packet(i: &str) -> IResult<&str, Packet> {
 
 impl Ord for Packet {
     fn cmp(&self, other: &Self) -> Ordering {
-        fn in_right_order_list(l: &[Packet], r: &[Packet]) -> Ordering {
+        fn in_right_order_list<T: Ord + Borrow<Packet>, U: Ord + Borrow<Packet>>(
+            l: &[T],
+            r: &[U],
+        ) -> Ordering {
             let mut i = 0;
             loop {
                 if i >= l.len() && i >= r.len() {
@@ -40,7 +44,7 @@ impl Ord for Packet {
                 if i >= r.len() {
                     return Ordering::Greater;
                 }
-                match l[i].cmp(&r[i]) {
+                match l[i].borrow().cmp(r[i].borrow()) {
                     Ordering::Equal => {}
                     o => return o,
                 }
@@ -51,8 +55,8 @@ impl Ord for Packet {
         match (self, other) {
             (Num(l), Num(r)) => l.cmp(r),
             (List(l), List(r)) => in_right_order_list(l, r),
-            (Num(_), List(r)) => in_right_order_list(&[self.clone()], r),
-            (List(l), Num(_)) => in_right_order_list(l, &[other.clone()]),
+            (Num(_), List(r)) => in_right_order_list(&[self], r),
+            (List(l), Num(_)) => in_right_order_list(l, &[other]),
         }
     }
 }
