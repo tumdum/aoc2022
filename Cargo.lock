@@ -27,6 +27,7 @@ dependencies = [
  "jemallocator",
  "memmap",
  "nom",
+ "rayon",
  "rustc-hash",
  "smallvec",
  "structopt",
