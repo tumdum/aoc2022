@@ -8,50 +8,40 @@ type V<T> = SmallVec<[T; 8]>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Pos {
-    row: i64,
-    col: i64,
+    row: i32,
+    col: i32,
 }
 
 impl Pos {
-    fn dist(self, other: Self) -> i64 {
+    fn dist(self, other: Self) -> i32 {
         (self.row - other.row).abs() + (self.col - other.col).abs()
     }
 }
 
-fn sorted_overlap((_, max1): (i64, i64), (min2, _): (i64, i64)) -> bool {
+fn sorted_overlap((_, max1): (i32, i32), (min2, _): (i32, i32)) -> bool {
     min2 <= max1 || max1 + 1 == min2
 }
 
 fn parse(s: &str) -> (Pos, Pos) {
     let s = s.split(' ').collect_vec();
-    let sx: i64 = s[2]
-        .strip_prefix("x=")
-        .unwrap()
-        .strip_suffix(',')
-        .unwrap()
-        .parse()
-        .unwrap();
-    let sy: i64 = s[3]
-        .strip_prefix("y=")
-        .unwrap()
-        .strip_suffix(':')
-        .unwrap()
-        .parse()
-        .unwrap();
-    let bx: i64 = s[8]
-        .strip_prefix("x=")
-        .unwrap()
-        .strip_suffix(',')
-        .unwrap()
-        .parse()
-        .unwrap();
-    let by: i64 = s[9].strip_prefix("y=").unwrap().parse().unwrap();
+    let parse = |p, s, i: &str| {
+        i.strip_prefix(p)
+            .unwrap()
+            .strip_suffix(s)
+            .unwrap()
+            .parse()
+            .unwrap()
+    };
+    let sx = parse("x=", ",", s[2]);
+    let sy = parse("y=", ":", s[3]);
+    let bx = parse("x=", ",", s[8]);
+    let by = parse("y=", "", s[9]);
     let s = Pos { row: sy, col: sx };
     let b = Pos { row: by, col: bx };
     (s, b)
 }
 
-fn min_max_in_range_for(s: Pos, b: Pos, row: i64) -> Option<(i64, i64)> {
+fn min_max_in_range_for(s: Pos, b: Pos, row: i32) -> Option<(i32, i32)> {
     let dist = s.dist(b);
     let off = dist - (s.row - row).abs();
     if off < 0 {
@@ -61,43 +51,36 @@ fn min_max_in_range_for(s: Pos, b: Pos, row: i64) -> Option<(i64, i64)> {
     }
 }
 
-fn intervals_for_row(row: i64, input: &[(Pos, Pos)]) -> V<(i64, i64)> {
-    let mut intervals: V<(i64, i64)> = smallvec![];
-    for (s, b) in input {
-        if let Some((min, max)) = min_max_in_range_for(*s, *b, row) {
-            intervals.push((min, max));
-        }
-        if s.row == row {
-            intervals.push((s.col, s.col));
-        }
-    }
+fn intervals_for_row(row: i32, input: &[(Pos, Pos)]) -> V<(i32, i32)> {
+    let mut intervals: V<(i32, i32)> = input
+        .iter()
+        .flat_map(|(s, b)| min_max_in_range_for(*s, *b, row))
+        .collect();
     intervals.sort_unstable_by_key(|(min, _)| *min);
 
-    let mut intervals_merged: V<(i64, i64)> = smallvec![intervals[0]];
-    let mut next = 1;
-    while next < intervals.len() {
+    let mut intervals_merged: V<(i32, i32)> = smallvec![intervals[0]];
+    for next in &intervals[1..] {
         let last_idx = intervals_merged.len() - 1;
         let last = intervals_merged[last_idx];
-        if sorted_overlap(last, intervals[next]) {
-            if intervals[next].1 > last.1 {
-                intervals_merged[last_idx].1 = intervals[next].1;
+        if sorted_overlap(last, *next) {
+            if next.1 > last.1 {
+                intervals_merged[last_idx].1 = next.1;
             }
         } else {
-            intervals_merged.push(intervals[next]);
+            intervals_merged.push(*next);
         }
-        next += 1;
     }
     intervals_merged
 }
 
-fn find_freq(input: &[(Pos, Pos)], max_row: i64) -> i64 {
+fn find_freq(input: &[(Pos, Pos)], max_row: i32) -> i64 {
     use rayon::prelude::*;
     (0..=max_row)
         .rev()
         .par_bridge()
         .map(|row| (row, intervals_for_row(row, input)))
         .find_any(|(_, int)| int.len() > 1)
-        .map(|(row, int)| (int[0].1 + 1) * 4000000 + row)
+        .map(|(row, int)| (int[0].1 as i64 + 1) * 4000000 + row as i64)
         .unwrap()
 }
 
@@ -111,7 +94,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let part1 = intervals_for_row(row, &input)
         .iter()
         .map(|(min, max)| max - min + 1)
-        .sum::<i64>() as usize
+        .sum::<i32>() as usize
         - b_in_row.len();
     let part2 = find_freq(&input, 4000000);
 
