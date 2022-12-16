@@ -21,8 +21,8 @@ nom = "7"
 
 [profile.release]
 debug=true
-lto="fat"
-codegen-units=1
+# lto="fat"
+# codegen-units=1
 
 [dev-dependencies]
 criterion = "0.3"

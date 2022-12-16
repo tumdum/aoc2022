@@ -61,8 +61,8 @@ fn main() {
         &aoc22::day13::solve,
         &aoc22::day14::solve,
         &aoc22::day15::solve,
-        /*
         &aoc22::day16::solve,
+        /*
         &aoc22::day17::solve,
         &aoc22::day18::solve,
         &aoc22::day19::solve,
