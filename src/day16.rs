@@ -256,7 +256,6 @@ fn part2(g: &G, start_node: u8) -> usize {
             all_actions.insert((*from, *to), find_path(g, *from, *to));
         }
     }
-    println!("{all_non_zero_valves:?} {}", all_non_zero_valves.len());
     let start_state = World {
         activated: HashSet::default(),
         actions: smallvec![],
@@ -291,11 +290,12 @@ fn part2(g: &G, start_node: u8) -> usize {
         c += 1;
         if c % 1000000 == 0 {
             println!(
-                "considering {}, considered {} rejected {} best {} ({:?},{:?}) ({},{}) {}",
+                "considering {}, considered {} rejected {} best {} best cache {}; ({:?},{:?}) ({},{}) {}",
                 todo.len(),
                 c,
                 rejected,
                 best_score,
+                best.len(),
                 my_world.activated.len(),
                 elephant_world.activated.len(),
                 my_world.actions.len(),
@@ -393,18 +393,18 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let s = Instant::now();
 
     // Works but is tragically slow
-//    let part1 = part1(&g, *m.get("AA").unwrap());
- //   assert_eq!(1820, part1);
+    let part1 = part1(&g, *m.get("AA").unwrap());
+    assert_eq!(1820, part1);
     let part2 = part2(&g, *m.get("AA").unwrap());
 
     let e = s.elapsed();
 
     if verify_expected {
-  //      assert_eq!(1820, part1);
+        assert_eq!(1820, part1);
         assert_eq!(2602, part2);
     }
     if output {
-   //     println!("\t{}", part1);
+        println!("\t{}", part1);
         println!("\t{}", part2);
     }
     Ok(e)
