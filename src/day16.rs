@@ -44,29 +44,21 @@ fn total_score(
     max_minutes: usize,
 ) -> (usize, u8, usize) {
     let mut s = 0;
-    let mut minute = 1;
-    let mut next_a = 0;
     let mut current = start_node;
     let mut turns = 0;
-    loop {
-        if next_a >= actions.len() {
-            break;
-        }
-        match &actions[next_a] {
+    for (minute, action) in actions.iter().enumerate().map(|(m, a)| (m + 1, a)) {
+        match action {
             MoveTo(target) => {
                 turns += 1;
                 current = target.to_owned();
             }
             Open(v) => {
                 turns += 1;
-                assert_eq!(&current, v);
+                debug_assert_eq!(&current, v);
                 let rate = g[current as usize].0;
                 s += (max_minutes - minute) * rate as usize
             }
         }
-
-        minute += 1;
-        next_a += 1;
     }
     (s, current, turns)
 }
@@ -95,13 +87,7 @@ struct Tmp(State, Action);
 
 impl Ord for Tmp {
     fn cmp(&self, other: &Self) -> Ordering {
-        // other.0.score.cmp(&self.0.score)
-        let ret = self.0.score.cmp(&other.0.score);
-        if ret == Ordering::Equal {
-            other.0.actions.len().cmp(&self.0.actions.len())
-        } else {
-            ret
-        }
+        self.0.score.cmp(&other.0.score)
     }
 }
 
@@ -209,25 +195,21 @@ fn make_next_world(
     g: &G,
     world: &World,
     target: u8,
-    actions: &HashMap<(u8, u8), V2<Action>>,
+    actions: &[Vec<V2<Action>>],
     start_node: u8,
 ) -> Option<(World, usize)> {
-    let actions: V2<Action> = world
-        .actions
-        .iter()
-        .chain(actions.get(&(world.current_node, target)).unwrap())
-        .copied()
-        .collect();
+    let mut actions_new: V2<Action> = world.actions.clone();
+    actions_new.extend_from_slice(&actions[world.current_node as usize][target as usize]);
 
-    if actions.len() > 26 {
+    if actions_new.len() > 26 {
         return None;
     }
 
-    assert!(!actions.spilled(), "{}", actions.len());
+    debug_assert!(!actions_new.spilled(), "{}", actions.len());
 
     let new_world = World {
         current_node: target.to_owned(),
-        actions,
+        actions: actions_new,
         activated: world
             .activated
             .iter()
@@ -254,13 +236,14 @@ fn part2(g: &G, start_node: u8) -> usize {
         .filter(|(_, rate)| **rate != 0)
         .map(|(name, _)| name as u8)
         .collect();
-    let mut all_actions: HashMap<(u8, u8), V2<Action>> = Default::default();
+    let l = 1 + *all_non_zero_valves.iter().max().unwrap() as usize;
+    let mut all_actions = vec![vec![V2::new(); l]; l];
     for from in all_non_zero_valves
         .iter()
         .chain(std::iter::once(&start_node))
     {
         for to in &all_non_zero_valves {
-            all_actions.insert((*from, *to), find_path(g, *from, *to));
+            all_actions[*from as usize][*to as usize] = find_path(g, *from, *to);
         }
     }
     let start_state = World {
@@ -293,11 +276,14 @@ fn part2(g: &G, start_node: u8) -> usize {
     let mut best_score = 0;
     let mut c = 0;
     let mut rejected = 0;
+    let mut time = Instant::now();
     while let Some(Order(my_world, elephant_world, my_score, elephant_score)) = todo.pop() {
         c += 1;
         if c % 1000000 == 0 {
+            let elapsed = time.elapsed();
+            time = Instant::now();
             eprintln!(
-                "considering {}, considered {} rejected {} best {} best cache {}; ({:?},{:?}) ({},{}) {}",
+                "[{elapsed:?}] considering {}, considered {} rejected {} best {} best cache {}; ({:?},{:?}) ({},{}) {}",
                 todo.len(),
                 c,
                 rejected,
