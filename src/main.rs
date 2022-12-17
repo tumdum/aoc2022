@@ -84,19 +84,30 @@ fn main() {
                 None => File::open(format!("inputs/day{:02}", i + 1)).unwrap(),
             };
 
-            let start = Instant::now();
+            let mut solution_times = vec![];
+            for i in 0..10 {
+                let start = Instant::now();
+                let mapped_input = unsafe { MmapOptions::new().map(&input_file).unwrap() };
+                let input = std::str::from_utf8(&mapped_input).unwrap();
 
-            let mapped_input = unsafe { MmapOptions::new().map(&input_file).unwrap() };
-            let input = std::str::from_utf8(&mapped_input).unwrap();
+                let t = match solution(
+                    input,
+                    !opt.skip_verification,
+                    if i == 0 { !opt.skip_output } else { false },
+                ) {
+                    Ok(t) => t,
+                    Err(e) => {
+                        eprintln!("Solution {i} failed: {e}");
+                        continue;
+                    }
+                };
 
-            let t = match solution(input, !opt.skip_verification, !opt.skip_output) {
-                Ok(t) => t,
-                Err(e) => {
-                    eprintln!("Solution {i} failed: {e}");
-                    continue;
+                solution_times.push((t, start.elapsed()));
+                if t > Duration::from_secs(1) {
+                    break;
                 }
-            };
-            let solution_with_io = start.elapsed();
+            }
+            let (t, solution_with_io) = solution_times.into_iter().min().unwrap();
             running_sum_compute += t;
             running_sum_io += solution_with_io;
             println!(

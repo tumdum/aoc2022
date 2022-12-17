@@ -155,7 +155,8 @@ fn find_path(g: &G, from: u8, to: u8) -> V2<Action> {
 
 fn part1(g: &G, start_node: u8) -> usize {
     let all_non_zero_valves: HashSet<u8> = g
-        .iter().enumerate()
+        .iter()
+        .enumerate()
         .map(|(name, (rate, _))| (name, rate))
         .filter(|(_, rate)| **rate != 0)
         .map(|(name, _)| name as u8)
@@ -227,7 +228,12 @@ fn make_next_world(
     let new_world = World {
         current_node: target.to_owned(),
         actions,
-        activated: world.activated.iter().copied().chain(once(target)).collect(),
+        activated: world
+            .activated
+            .iter()
+            .copied()
+            .chain(once(target))
+            .collect(),
     };
     let (score, _, _) = total_score(&new_world.actions, start_node, g, 26);
     Some((new_world, score))
@@ -242,7 +248,8 @@ struct World {
 
 fn part2(g: &G, start_node: u8) -> usize {
     let all_non_zero_valves: HashSet<u8> = g
-        .iter().enumerate()
+        .iter()
+        .enumerate()
         .map(|(name, (rate, _))| (name, rate))
         .filter(|(_, rate)| **rate != 0)
         .map(|(name, _)| name as u8)
@@ -289,7 +296,7 @@ fn part2(g: &G, start_node: u8) -> usize {
     while let Some(Order(my_world, elephant_world, my_score, elephant_score)) = todo.pop() {
         c += 1;
         if c % 1000000 == 0 {
-            println!(
+            eprintln!(
                 "considering {}, considered {} rejected {} best {} best cache {}; ({:?},{:?}) ({},{}) {}",
                 todo.len(),
                 c,
@@ -384,10 +391,10 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         })
         .collect();
 
-    let mut g : Vec<(i8, V<u8>)> = vec![];
+    let mut g: Vec<(i8, V<u8>)> = vec![];
     for i in input.keys().sorted() {
         g.push(input.get(i).unwrap().clone());
-        assert_eq!((i+1) as usize, g.len());
+        assert_eq!((i + 1) as usize, g.len());
     }
 
     let s = Instant::now();
