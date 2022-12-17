@@ -1,26 +1,28 @@
 [![Rust](https://github.com/tumdum/aoc2022/actions/workflows/rust.yml/badge.svg)](https://github.com/tumdum/aoc2022/actions/workflows/rust.yml)
 
 # Advent of Code solutions 2022
-Solutions for Advent of Code 2022, target for total runtime is <1s.
 
 ```
-Day 01 took     2.0µs to compute (rsum     2.0µs) (with i/o:   120.8µs, rsum   120.8µs)
-Day 02 took    48.2µs to compute (rsum    50.3µs) (with i/o:   177.9µs, rsum   298.7µs)
-Day 03 took    67.8µs to compute (rsum   118.1µs) (with i/o:   142.1µs, rsum   440.7µs)
-Day 04 took     7.4µs to compute (rsum   125.5µs) (with i/o:   153.4µs, rsum   594.2µs)
-Day 05 took    25.2µs to compute (rsum   150.7µs) (with i/o:   120.3µs, rsum   714.5µs)
-Day 06 took    39.4µs to compute (rsum   190.1µs) (with i/o:    54.1µs, rsum   768.6µs)
-Day 07 took   300.6µs to compute (rsum   490.7µs) (with i/o:   344.5µs, rsum     1.1ms)
-Day 08 took   563.3µs to compute (rsum     1.1ms) (with i/o:   589.7µs, rsum     1.7ms)
-Day 09 took   662.5µs to compute (rsum     1.7ms) (with i/o:   803.1µs, rsum     2.5ms)
-Day 10 took     2.4µs to compute (rsum     1.7ms) (with i/o:    27.3µs, rsum     2.5ms)
-Day 11 took    17.3ms to compute (rsum    19.0ms) (with i/o:    17.3ms, rsum    19.9ms)
-Day 12 took   149.1µs to compute (rsum    19.2ms) (with i/o:   170.2µs, rsum    20.0ms)
-Day 13 took   215.6µs to compute (rsum    19.4ms) (with i/o:   661.1µs, rsum    20.7ms)
-Day 14 took   482.9µs to compute (rsum    19.9ms) (with i/o:   710.3µs, rsum    21.4ms)
+Day 01 took     1.2µs to compute (rsum     1.2µs) (with i/o:   110.7µs, rsum   110.7µs)
+Day 02 took    63.3µs to compute (rsum    64.5µs) (with i/o:   239.2µs, rsum   349.9µs)
+Day 03 took    93.8µs to compute (rsum   158.3µs) (with i/o:   130.0µs, rsum   479.9µs)
+Day 04 took     5.9µs to compute (rsum   164.1µs) (with i/o:   228.2µs, rsum   708.1µs)
+Day 05 took    41.0µs to compute (rsum   205.1µs) (with i/o:   145.7µs, rsum   853.8µs)
+Day 06 took    29.8µs to compute (rsum   234.9µs) (with i/o:    37.2µs, rsum   891.0µs)
+Day 07 took   216.1µs to compute (rsum   451.1µs) (with i/o:   257.9µs, rsum     1.1ms)
+Day 08 took   456.2µs to compute (rsum   907.2µs) (with i/o:   470.5µs, rsum     1.6ms)
+Day 09 took   739.4µs to compute (rsum     1.6ms) (with i/o:   847.9µs, rsum     2.5ms)
+Day 10 took     2.3µs to compute (rsum     1.6ms) (with i/o:    19.0µs, rsum     2.5ms)
+Day 11 took    17.0ms to compute (rsum    18.6ms) (with i/o:    17.0ms, rsum    19.5ms)
+Day 12 took    88.9µs to compute (rsum    18.7ms) (with i/o:    98.9µs, rsum    19.6ms)
+Day 13 took   205.4µs to compute (rsum    18.9ms) (with i/o:   566.5µs, rsum    20.1ms)
+Day 14 took   550.5µs to compute (rsum    19.5ms) (with i/o:   780.0µs, rsum    20.9ms)
+Day 15 took   136.4ms to compute (rsum   155.8ms) (with i/o:   136.4ms, rsum   157.3ms)
+Day 16 took    133.1s to compute (rsum    133.2s) (with i/o:    133.1s, rsum    133.2s)
+Day 17 took     6.7ms to compute (rsum    133.2s) (with i/o:     6.7ms, rsum    133.2s)
 
-         Total time for 14 days:    19.9ms (avg per day     1.4ms, med:   108.5µs, min:     2.0µs, max:    17.3ms)
-Total time with i/o for 14 days:    21.4ms (avg per day     1.5ms, med:   174.0µs, min:    27.3µs, max:    17.3ms)
+         Total time for 17 days:    133.2s (avg per day      7.8s, med:   205.4µs, min:     1.2µs, max:    133.1s)
+Total time with i/o for 17 days:    133.2s (avg per day      7.8s, med:   257.9µs, min:    19.0µs, max:    133.1s)
 ```
 
 - Day 9 recordings: [twitch](https://www.twitch.tv/videos/1674217005), [youtube](https://youtu.be/2VJgFk-mDRg)
