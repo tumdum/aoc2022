@@ -63,8 +63,8 @@ fn main() {
         &aoc22::day15::solve,
         &aoc22::day16::solve,
         &aoc22::day17::solve,
-        /*
         &aoc22::day18::solve,
+        /*
         &aoc22::day19::solve,
         &aoc22::day20::solve,
         &aoc22::day21::solve,
@@ -85,7 +85,11 @@ fn main() {
             };
 
             let mut solution_times = vec![];
-            for i in 0..10 {
+            #[cfg(debug_assertions)]
+            let loops = 1;
+            #[cfg(not(debug_assertions))]
+            let loops = 10;
+            for i in 0..loops {
                 let start = Instant::now();
                 let mapped_input = unsafe { MmapOptions::new().map(&input_file).unwrap() };
                 let input = std::str::from_utf8(&mapped_input).unwrap();
