@@ -1,11 +1,10 @@
+use crate::U8Set;
 use anyhow::Result;
 use itertools::{iproduct, Itertools};
 use rustc_hash::FxHashMap as HashMap;
-use rustc_hash::FxHashSet as HashSet;
 use smallvec::{smallvec, SmallVec};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, VecDeque};
-use std::iter::once;
 use std::time::{Duration, Instant};
 
 type G = Vec<(i8, V<u8>)>;
@@ -18,7 +17,7 @@ fn parse(s: &str) -> (String, (i8, V<String>)) {
     let rate: i8 = s[4]
         .strip_prefix("rate=")
         .unwrap()
-        .strip_suffix(";")
+        .strip_suffix(';')
         .unwrap()
         .parse()
         .unwrap();
@@ -110,13 +109,13 @@ fn find_path(g: &G, from: u8, to: u8) -> V2<Action> {
         for neighbour in &g[node as usize].1 {
             let new_cost = cost + 1;
             if best
-                .get(&*neighbour)
+                .get(neighbour)
                 .map(|(cost, _)| *cost)
                 .unwrap_or(usize::max_value())
                 > new_cost
             {
                 todo.push_back((neighbour.to_owned(), new_cost));
-                best.insert(neighbour.to_owned(), (new_cost, node.clone()));
+                best.insert(neighbour.to_owned(), (new_cost, node));
             }
         }
     }
@@ -128,56 +127,57 @@ fn find_path(g: &G, from: u8, to: u8) -> V2<Action> {
         if cur == from {
             break;
         }
-        path.push(cur.clone());
+        path.push(cur);
     }
     path.push(cur);
     assert_eq!(Some(from.to_owned()), path.pop());
     path.reverse();
-    let mut actions: V2<Action> = path.into_iter().map(|node| MoveTo(node)).collect();
+    let mut actions: V2<Action> = path.into_iter().map(MoveTo).collect();
     actions.push(Open(to));
 
     actions
 }
 
 fn part1(g: &G, start_node: u8) -> usize {
-    let all_non_zero_valves: HashSet<u8> = g
+    let mut all_non_zero_valves: U8Set = g
         .iter()
         .enumerate()
         .map(|(name, (rate, _))| (name, rate))
         .filter(|(_, rate)| **rate != 0)
         .map(|(name, _)| name as u8)
         .collect();
+    all_non_zero_valves.max = 50;
     let start_state = World {
-        activated: HashSet::default(),
+        activated: Default::default(),
         actions: smallvec![],
         current_node: start_node,
     };
     let mut todo: VecDeque<(World, usize)> = VecDeque::new();
     let mut best: HashMap<V<u8>, usize> = HashMap::default();
-    todo.push_back((start_state.clone(), 0));
+    todo.push_back((start_state, 0));
     let mut best_score = 0;
     while let Some((world, score)) = todo.pop_front() {
         if best_score < score {
             best_score = best_score.max(score);
         }
         let targets = all_non_zero_valves.difference(&world.activated);
-        for target in targets {
-            let new_actions = find_path(g, world.current_node, *target);
+        for target in targets.iter() {
+            let new_actions = find_path(g, world.current_node, target);
             let mut actions = world.actions.clone();
             actions.extend(new_actions);
             if actions.len() > 30 {
                 continue;
             }
-            let mut new_activated = world.activated.clone();
-            new_activated.insert(target.clone());
+            let mut new_activated = world.activated;
+            new_activated.insert(target);
 
             let new_world = World {
-                current_node: *target,
+                current_node: target,
                 actions,
                 activated: new_activated,
             };
             let state = State::new(&new_world.actions, start_node, g, 30);
-            let mut new_activated_vec: V<u8> = new_world.activated.iter().cloned().collect();
+            let mut new_activated_vec: V<u8> = new_world.activated.iter().collect();
             new_activated_vec.sort_unstable();
             let old_score = best.get(&new_activated_vec).copied().unwrap_or(0);
             if old_score > state.score {
@@ -207,15 +207,13 @@ fn make_next_world(
 
     debug_assert!(!actions_new.spilled(), "{}", actions.len());
 
+    let mut activated = world.activated;
+    activated.insert(target);
+
     let new_world = World {
         current_node: target.to_owned(),
         actions: actions_new,
-        activated: world
-            .activated
-            .iter()
-            .copied()
-            .chain(once(target))
-            .collect(),
+        activated,
     };
     let (score, _, _) = total_score(&new_world.actions, start_node, g, 26);
     Some((new_world, score))
@@ -223,31 +221,32 @@ fn make_next_world(
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct World {
-    activated: HashSet<u8>,
+    activated: U8Set,
     actions: V2<Action>,
     current_node: u8,
 }
 
 fn part2(g: &G, start_node: u8) -> usize {
-    let all_non_zero_valves: HashSet<u8> = g
+    let mut all_non_zero_valves: U8Set = g
         .iter()
         .enumerate()
         .map(|(name, (rate, _))| (name, rate))
         .filter(|(_, rate)| **rate != 0)
         .map(|(name, _)| name as u8)
         .collect();
-    let l = 1 + *all_non_zero_valves.iter().max().unwrap() as usize;
+    all_non_zero_valves.max = 50;
+    let l = 1 + all_non_zero_valves.iter().max().unwrap() as usize;
     let mut all_actions = vec![vec![V2::new(); l]; l];
     for from in all_non_zero_valves
         .iter()
-        .chain(std::iter::once(&start_node))
+        .chain(std::iter::once(start_node))
     {
-        for to in &all_non_zero_valves {
-            all_actions[*from as usize][*to as usize] = find_path(g, *from, *to);
+        for to in all_non_zero_valves.iter() {
+            all_actions[from as usize][to as usize] = find_path(g, from, to);
         }
     }
     let start_state = World {
-        activated: HashSet::default(),
+        activated: U8Set::new(50),
         actions: smallvec![],
         current_node: start_node,
     };
@@ -272,7 +271,7 @@ fn part2(g: &G, start_node: u8) -> usize {
 
     let mut todo: BinaryHeap<Order> = Default::default();
     let mut best: HashMap<V<u8>, usize> = HashMap::default();
-    todo.push(Order(start_state.clone(), start_state.clone(), 0, 0));
+    todo.push(Order(start_state.clone(), start_state, 0, 0));
     let mut best_score = 0;
     let mut c = 0;
     let mut rejected = 0;
@@ -299,21 +298,20 @@ fn part2(g: &G, start_node: u8) -> usize {
         if best_score < (my_score + elephant_score) {
             best_score = my_score + elephant_score;
         }
-        let my_targets: HashSet<u8> = all_non_zero_valves
-            .difference(&my_world.activated)
-            .cloned()
-            .collect();
-        let targets = my_targets.difference(&elephant_world.activated);
-        for (my_target, elephant_target) in iproduct!(targets.clone(), targets) {
+        let mut my_targets: U8Set = all_non_zero_valves.difference(&my_world.activated);
+        my_targets.max = 50;
+        let mut targets: U8Set = my_targets.difference(&elephant_world.activated);
+        targets.max = 50;
+        for (my_target, elephant_target) in iproduct!(targets.iter_clone(), targets.iter_clone()) {
             if my_target == elephant_target {
                 continue;
             }
 
-            let my_new_world = make_next_world(g, &my_world, *my_target, &all_actions, start_node);
+            let my_new_world = make_next_world(g, &my_world, my_target, &all_actions, start_node);
             let elephant_new_world = make_next_world(
                 g,
                 &elephant_world,
-                *elephant_target,
+                elephant_target,
                 &all_actions,
                 start_node,
             );
@@ -334,11 +332,8 @@ fn part2(g: &G, start_node: u8) -> usize {
 
             let my_new_activated = my_new_world.0.activated.iter();
             let e_new_activated = elephant_new_world.0.activated.iter();
-            let all_new_activated: V<u8> = my_new_activated
-                .chain(e_new_activated)
-                .sorted()
-                .copied()
-                .collect();
+            let mut all_new_activated: V<u8> = my_new_activated.chain(e_new_activated).collect();
+            all_new_activated.sort_unstable();
             assert!(!all_new_activated.spilled(), "{}", all_new_activated.len());
             let best_score_for_all = best.get(&all_new_activated).copied().unwrap_or(0);
             let new_total_score = my_score + elephant_score;
