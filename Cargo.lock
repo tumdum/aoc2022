@@ -40,6 +40,7 @@ dependencies = [
  "nom",
  "once_cell",
  "parking_lot",
+ "rayon",
  "regex",
  "rustc-hash",
  "smallvec",

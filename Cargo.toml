@@ -18,6 +18,7 @@ memmap = "0.7"
 anyhow = "1"
 jemallocator = "0.5"
 nom = "7"
+rayon = "1"
 
 [profile.release]
 debug=true
