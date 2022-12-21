@@ -1,8 +1,21 @@
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use itertools::Itertools;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
+use smallvec::{SmallVec};
+
+type V<T> = SmallVec<[T; 10]>;
+type State = HashMap<Node, Expr>;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct Node(u32);
+
+impl Node {
+    fn new(s: &str) -> Self {
+        Self(u32::from_le_bytes(s.as_bytes().try_into().unwrap()))
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Kind {
@@ -40,11 +53,11 @@ impl FromStr for Kind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Expr {
     Var,
     Const(i64),
-    Op(String, Kind, String),
+    Op(Node, Kind, Node),
 }
 
 impl Expr {
@@ -57,38 +70,40 @@ impl Expr {
 
 use Expr::*;
 
-fn parse(s: &str) -> (String, Expr) {
+fn parse(s: &str) -> (Node, Expr) {
     let s = s.split(' ').collect_vec();
-    let name = s[0].strip_suffix(':').unwrap().to_owned();
+    let name = s[0].strip_suffix(':').unwrap();
     let expr = if s.len() == 2 {
         Const(s[1].parse().unwrap())
     } else {
-        let l = s[1].to_owned();
+        let l = Node::new(s[1]);
         let op = s[2].parse().unwrap();
-        let r = s[3].to_owned();
+        let r = Node::new(s[3]);
         Op(l, op, r)
     };
-    (name, expr)
+    (Node::new(name), expr)
 }
 
-fn eval(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
-    while let Some(Op(_, _, _)) = state.get("root") {
-        let new_vals = state
+fn eval(mut state: State) -> State {
+    let root = Node::new("root");
+    while let Some(Op(_, _, _)) = state.get(&root) {
+        let new_vals : V<(Node, i64)> = state
             .iter()
             .filter_map(|(n, v)| {
                 if let Op(l, op, r) = v {
                     match (state.get(l), state.get(r)) {
-                        (Some(Const(a)), Some(Const(b))) => Some((n.to_owned(), op.eval(*a, *b))),
+                        (Some(Const(a)), Some(Const(b))) => Some((*n, op.eval(*a, *b))),
                         _ => None,
                     }
                 } else {
                     None
                 }
             })
-            .collect_vec();
+            .collect();
         if new_vals.is_empty() {
             break;
         }
+        println!("{}", new_vals.len());
         for (name, v) in new_vals {
             state.insert(name, Const(v));
         }
@@ -96,20 +111,21 @@ fn eval(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
     state
 }
 
-fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
+fn simplify(mut state: State) -> State {
     state = eval(state);
+    let root = Node::new("root");
 
     loop {
-        if let Op(l, Eql, v_name) = state.get("root").unwrap().clone() {
-            if let Const(v) = state.get(&v_name).unwrap().clone() {
-                let l = state.get(&l).unwrap().clone();
+        if let Op(l, Eql, v_name) = *state.get(&root).unwrap() {
+            if let Const(v) = *state.get(&v_name).unwrap() {
+                let l = *state.get(&l).unwrap();
                 match l {
                     Op(l, Div, r) => {
-                        if let Const(r) = state.get(&r).unwrap() {
+                        if let Const(r) = *state.get(&r).unwrap() {
                             let v = Const(v * r);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(l.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -119,7 +135,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(v + r);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(l.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -127,7 +143,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(l - v);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(r.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -137,7 +153,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(v - l);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(r.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -145,7 +161,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(v - r);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(l.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -155,7 +171,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(v / l);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(r.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -163,7 +179,7 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
                             let v = Const(v / r);
                             state.insert(v_name.to_owned(), v);
                             state.insert(
-                                "root".to_owned(),
+                                Node::new("root"),
                                 Op(l.to_owned(), Eql, v_name.to_owned()),
                             );
                         }
@@ -179,22 +195,22 @@ fn simplify(mut state: HashMap<String, Expr>) -> HashMap<String, Expr> {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: HashMap<String, Expr> = input.lines().map(parse).collect();
+    let input: State = input.lines().map(parse).collect();
 
     let s = Instant::now();
 
     let state = eval(input.clone());
-    let part1 = match state.get("root") {
+    let part1 = match state.get(&Node::new("root")) {
         Some(Const(n)) => *n,
         _ => unreachable!(),
     };
 
-    let mut state = input.clone();
-    state.insert("humn".to_owned(), Var);
-    state.get_mut("root").unwrap().make_op(Eql);
+    let mut state = input;
+    state.insert(Node::new("humn"), Var);
+    state.get_mut(&Node::new("root")).unwrap().make_op(Eql);
     state = simplify(state);
 
-    let part2 = match state.get("root") {
+    let part2 = match state.get(&Node::new("root")) {
         Some(Op(l, Eql, r)) => match (state.get(l), state.get(r)) {
             (Some(Const(n)), _) => *n,
             (_, Some(Const(n))) => *n,
