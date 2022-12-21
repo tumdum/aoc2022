@@ -106,7 +106,7 @@ fn count_exposed_sides(ps: &[P3]) -> (usize, usize) {
     let without_inner_air = ps
         .iter()
         .flat_map(|p| p.neighbours())
-        .filter(|p| !points.contains(&p) && outside_points.contains(p))
+        .filter(|p| !points.contains(p) && outside_points.contains(p))
         .count();
 
     (sides_exposed_to_air, without_inner_air)
