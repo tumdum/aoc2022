@@ -15,6 +15,8 @@ enum Step {
 }
 use Step::*;
 
+type I = i32;
+
 fn parse_path(s: &str) -> Vec<Step> {
     let s = s.replace('R', " R ").replace('L', " L ");
     s.split(' ')
@@ -33,8 +35,8 @@ fn parse_path(s: &str) -> Vec<Step> {
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct P {
-    row: isize,
-    col: isize,
+    row: I,
+    col: I,
 }
 
 impl Debug for P {
@@ -49,7 +51,7 @@ const UP: P = P { row: -1, col: 0 };
 const DOWN: P = P { row: 1, col: 0 };
 
 impl P {
-    fn get(self, m: &[Vec<char>]) -> Option<char> {
+    fn get(self, m: &[Vec<u8>]) -> Option<u8> {
         if self.row < 0 || self.col < 0 {
             None
         } else {
@@ -104,15 +106,15 @@ impl P {
     fn next2(
         self,
         dir: Self,
-        m: &[Vec<char>],
-        cube: &HashMap<(P3, P3), (char, P)>,
+        m: &[Vec<u8>],
+        cube: &HashMap<(P3, P3), (u8, P)>,
         p_to_p3: &HashMap<P, P3>,
         orient_per_p: &HashMap<P, Orient>,
     ) -> Option<(P, P)> {
         let next = self.add(dir);
         match next.get(m) {
-            Some('.') => Some((next, dir)),
-            Some('#') => None,
+            Some(b'.') => Some((next, dir)),
+            Some(b'#') => None,
             _ => {
                 let p3 = p_to_p3.get(&self).unwrap();
                 let orient = orient_per_p.get(&self).unwrap();
@@ -132,18 +134,18 @@ impl P {
                 let (value, next_p2) = cube.get(&(*p3, next_normal)).unwrap();
                 let new_dir = next_from_p3_as_p.sub(*next_p2);
                 match value {
-                    '.' => Some((*next_p2, new_dir)),
-                    '#' => None,
+                    b'.' => Some((*next_p2, new_dir)),
+                    b'#' => None,
                     _ => todo!(),
                 }
             }
         }
     }
-    fn next(self, dir: Self, m: &[Vec<char>]) -> Option<P> {
+    fn next(self, dir: Self, m: &[Vec<u8>]) -> Option<P> {
         let next = self.add(dir);
         match next.get(m) {
-            Some('.') => Some(next),
-            Some('#') => None,
+            Some(b'.') => Some(next),
+            Some(b'#') => None,
             _ => {
                 let mut cur = if dir == RIGHT {
                     P {
@@ -158,11 +160,11 @@ impl P {
                 } else if dir == LEFT {
                     P {
                         row: self.row,
-                        col: (m[self.row as usize].len() - 1) as isize,
+                        col: (m[self.row as usize].len() - 1) as I,
                     }
                 } else if dir == UP {
                     P {
-                        row: (m.len() - 1) as isize,
+                        row: (m.len() - 1) as I,
                         col: self.col,
                     }
                 } else {
@@ -171,9 +173,9 @@ impl P {
 
                 loop {
                     let cand = m[cur.row as usize][cur.col as usize];
-                    if cand == '.' {
+                    if cand == b'.' {
                         return Some(cur);
-                    } else if cand == '#' {
+                    } else if cand == b'#' {
                         return None;
                     }
                     cur = cur.add(dir);
@@ -200,19 +202,19 @@ impl P {
     }
 }
 
-fn find_start(m: &[Vec<char>]) -> P {
+fn find_start(m: &[Vec<u8>]) -> P {
     for i in 0..m[0].len() {
-        if m[0][i] == '.' {
+        if m[0][i] == b'.' {
             return P {
                 row: 0,
-                col: i as isize,
+                col: i as I,
             };
         }
     }
     unreachable!();
 }
 
-fn run_path(m: &[Vec<char>], path: &[Step]) -> usize {
+fn run_path(m: &[Vec<u8>], path: &[Step]) -> usize {
     let mut pos: P = find_start(m);
     let mut dir: P = RIGHT;
     for step in path {
@@ -240,9 +242,9 @@ fn run_path(m: &[Vec<char>], path: &[Step]) -> usize {
 }
 
 fn run_path2(
-    m: &[Vec<char>],
+    m: &[Vec<u8>],
     path: &[Step],
-    cube: &HashMap<(P3, P3), (char, P)>,
+    cube: &HashMap<(P3, P3), (u8, P)>,
     p_to_p3: &HashMap<P, P3>,
     orient_per_p: &HashMap<P, Orient>,
 ) -> usize {
@@ -276,16 +278,16 @@ fn run_path2(
 // Side pos -> Map pos
 type Side = HashMap<P, P>;
 
-fn get_side_from(start: P, size: usize, m: &[Vec<char>]) -> Option<Side> {
+fn get_side_from(start: P, size: usize, m: &[Vec<u8>]) -> Option<Side> {
     let mut ret: HashMap<P, P> = Default::default();
     for row in (start.row as usize)..(start.row as usize + size) {
         for col in (start.col as usize)..(start.col as usize + size) {
             let map_pos = P {
-                row: row as isize,
-                col: col as isize,
+                row: row as I,
+                col: col as I,
             };
             if let Some(c) = map_pos.get(m) {
-                if c == ' ' {
+                if c == b' ' {
                     return None;
                 }
                 let side_pos = P {
@@ -303,18 +305,18 @@ fn get_side_from(start: P, size: usize, m: &[Vec<char>]) -> Option<Side> {
     }
 }
 
-fn split_into_sides(m: &[Vec<char>], size: usize) -> BTreeMap<P, Side> {
+fn split_into_sides(m: &[Vec<u8>], size: usize) -> BTreeMap<P, Side> {
     iproduct!(0..4, 0..4)
         .map(|(row, col)| P {
-            row: (row * size) as isize,
-            col: (col * size) as isize,
+            row: (row * size) as I,
+            col: (col * size) as I,
         })
         .flat_map(|start| {
             get_side_from(start, size, m).map(|side| {
                 (
                     P {
-                        row: start.row / size as isize,
-                        col: start.col / size as isize,
+                        row: start.row / size as I,
+                        col: start.col / size as I,
                     },
                     side,
                 )
@@ -325,9 +327,9 @@ fn split_into_sides(m: &[Vec<char>], size: usize) -> BTreeMap<P, Side> {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct P3 {
-    x: isize,
-    y: isize,
-    z: isize,
+    x: I,
+    y: I,
+    z: I,
 }
 
 impl P3 {
@@ -583,13 +585,13 @@ fn find_normals_for_sides(sides: &BTreeMap<P, Side>) -> HashMap<P, Orient> {
 }
 
 fn create_cube(
-    map: &[Vec<char>],
+    map: &[Vec<u8>],
     sides: &BTreeMap<P, Side>,
     normals: &HashMap<P, Orient>,
     size: usize,
-) -> (HashMap<(P3, P3), (char, P)>, HashMap<P, P3>) {
-    let max = size as isize - 1;
-    let mut cube: HashMap<(P3, P3), (char, P)> = Default::default();
+) -> (HashMap<(P3, P3), (u8, P)>, HashMap<P, P3>) {
+    let max = size as I - 1;
+    let mut cube: HashMap<(P3, P3), (u8, P)> = Default::default();
     let mut p_to_p3: HashMap<P, P3> = Default::default();
     for (p, points) in sides {
         let orient = normals.get(p).unwrap();
@@ -629,15 +631,15 @@ fn create_cube(
         let (min_x, max_x) = points.keys().map(|p| p.col).minmax().into_option().unwrap();
         let (min_y, max_y) = points.keys().map(|p| p.row).minmax().into_option().unwrap();
         assert_eq!(0, min_x);
-        assert_eq!(size as isize - 1, max_x);
+        assert_eq!(size as I - 1, max_x);
         assert_eq!(0, min_y);
-        assert_eq!(size as isize - 1, max_y);
+        assert_eq!(size as I - 1, max_y);
         for row in 0..size {
             let mut cube_pos = row_start;
             for col in 0..size {
                 let tmp_pos = P {
-                    row: row as isize,
-                    col: col as isize,
+                    row: row as I,
+                    col: col as I,
                 };
                 let tmp_pos2 = points.get(&tmp_pos).unwrap();
                 let value = tmp_pos2.get(map).unwrap();
@@ -654,14 +656,14 @@ fn create_cube(
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
     let input: Vec<&str> = input.lines().collect();
     let path = input.last().unwrap();
-    let mut map: Vec<Vec<char>> = input[..input.len() - 2]
+    let mut map: Vec<Vec<u8>> = input[..input.len() - 2]
         .iter()
-        .map(|l| l.chars().collect())
+        .map(|l| l.bytes().collect())
         .collect();
     let max_w = map.iter().map(|row| row.len()).max().unwrap();
     for row in &mut map {
         while row.len() != max_w {
-            row.push(' ');
+            row.push(b' ');
         }
     }
     let path = parse_path(path);
