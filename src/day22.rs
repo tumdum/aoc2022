@@ -1,7 +1,7 @@
 use anyhow::Result;
 use itertools::Itertools;
 use maplit::hashmap;
-use std::collections::{HashSet,BTreeMap, HashMap, VecDeque};
+use std::collections::{HashSet,BTreeSet, BTreeMap, HashMap, VecDeque};
 use std::time::{Duration, Instant};
 use std::fmt::{Error,Formatter,Debug};
 
@@ -119,13 +119,14 @@ impl P {
                 } else if dir == DOWN {
                     orient.down
                 } else if dir == LEFT {
-                    todo!()
+                    orient.right.inv()
                 } else if dir == RIGHT {
                     orient.right
                 } else {
                     todo!()
                 };
                 let tmp_p3 = p3.add(orient.normal.inv());
+                println!("{:?} + {:?} -> {:?} {}", p3, orient.normal.inv(), tmp_p3, next_normal.name());
                 let tmp_p : P = cube.get(&(tmp_p3, next_normal)).unwrap().1;
                 let (value, next_p2) = cube.get(&(*p3, next_normal)).unwrap();
                 let new_dir = tmp_p.sub(*next_p2);
@@ -258,7 +259,7 @@ fn run_path(m: &[Vec<char>], path: &[Step]) {
 }
 
 fn run_path2(m: &[Vec<char>], path: &[Step], cube: &HashMap<(P3,P3), (char,P)>, p_to_p3: &HashMap<P, P3>, orient_per_p: &HashMap<P, Orient>) {
-    let mut pos: P = dbg!(find_start(m));
+    let mut pos: P = find_start(m);
     let mut dir: P = RIGHT;
     for step in path {
         let old_pos = pos;
@@ -279,7 +280,6 @@ fn run_path2(m: &[Vec<char>], path: &[Step], cube: &HashMap<(P3,P3), (char,P)>, 
         }
         println!("{old_pos:?} {old_dir:?} -> {step:?} -> {pos:?} {dir:?}");
     }
-    // dbg!(pos, dir);
     let mut facing = hashmap! {
         RIGHT => 0,
         DOWN => 1,
@@ -383,10 +383,12 @@ impl P3 {
     fn ddown(self) -> P3 {
         if self == IN3 { return DOWN3 }
         if self == DOWN3 { return OUT3 }
+        if self == OUT3 { return RIGHT3 }
         todo!("{}", self.name())
     }
     fn rdown(self) -> P3 {
         if self == RIGHT3 { return RIGHT3 }
+        if self == DOWN3 { return DOWN3 }
         todo!("{}", self.name())
     }
     fn left(self) -> P3 {
@@ -402,19 +404,23 @@ impl P3 {
     }
     fn dleft(self) -> P3 {
         if self == DOWN3 { return DOWN3 }
+        if self == OUT3 { return OUT3 } // new
         unreachable!("{}", self.name())
     }
     fn rleft(self) -> P3 {
-        if self == RIGHT3 { return IN3 }
+        // if self == RIGHT3 { return IN3 } // example
+        if self == RIGHT3 { return DOWN3 } // new
         if self == IN3 { return LEFT3 }
         unreachable!("{}", self.name())
     }
     fn dright(self) -> P3 {
         if self == OUT3 { return OUT3 }
+        if self == IN3 { return IN3 } // new
         unreachable!("{}", self.name())
     }
     fn rright(self) -> P3 {
-        if self == RIGHT3 { return UP3 }
+        // if self == RIGHT3 { return UP3 } // example
+        if self == RIGHT3 { return DOWN3 } // new
         unreachable!("{}", self.name())
     }
 
@@ -455,9 +461,7 @@ impl Orient {
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
     let input: Vec<&str> = input.lines().collect();
-    dbg!(&input);
     let path = input.last().unwrap();
-    dbg!(&path);
     let mut map: Vec<Vec<char>> = input[..input.len() - 2]
         .iter()
         .map(|l| l.chars().collect())
@@ -469,11 +473,9 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             map[i].push(' ');
         }
     }
-    dbg!(min_w, max_w);
     let max_w = map.iter().map(|row| row.len()).max().unwrap();
     let min_w = map.iter().map(|row| row.len()).min().unwrap();
-    dbg!(min_w, max_w);
-    let path = dbg!(parse_path(path));
+    let path = parse_path(path);
 
     parse_map(&map);
 
@@ -481,8 +483,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     run_path(&map, &path);
 
-    let size = 50;
-    let size = 4;
+    let size = if map.len() > 50 { 50 } else { 4 };
 
     let sides: BTreeMap<P, Side> = split_into_sides(&map, size);
     for p in sides.keys() {
@@ -492,7 +493,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let mut normals: BTreeMap<P, Orient> = Default::default();
     normals.insert(*sides.keys().find(|p| p.row == 0).unwrap(), Orient{ down: IN3, right: RIGHT3, normal: UP3 });
     // println!("normals: {:?}", normals.iter().map(|(p,d)| (p,d.name())).collect_vec());
-    let mut todo : HashSet<P> = sides.keys().copied().collect();
+    let mut todo : BTreeSet<P> = sides.keys().copied().collect();
     todo.remove(sides.keys().find(|p| p.row == 0).unwrap());
     while todo.len() > 0 {
         println!("todo: {}, done: {}", todo.len(), normals.len());
@@ -503,6 +504,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         'out: for to_check in &todo {
             for (done, orient) in &normals {
                 if done.add(DOWN) == *to_check {
+                    println!("{done:?} -> {to_check:?}");
                     let next_normal = orient.normal.down();
                     let next_down = orient.down.ddown();
                     println!("{done:?}->{to_check:?}: down rotated by down: {} -> {}", orient.down.name(), next_down.name());
@@ -514,6 +516,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                     break 'out;
                 }
                 if done.add(LEFT) == *to_check {
+                    println!("{done:?} -> {to_check:?}");
                     let next_normal = orient.normal.left();
                     let next_down = orient.down.dleft();
                     println!("{done:?}->{to_check:?}: down rotated by left: {} -> {}", orient.down.name(), next_down.name());
@@ -524,6 +527,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                     break 'out;
                 }
                 if done.add(RIGHT) == *to_check {
+                    println!("{done:?} -> {to_check:?}");
                     let next_normal = orient.normal.right();
                     let next_down = orient.down.dright();
                     println!("{done:?}->{to_check:?}: down rotated by right: {} -> {}", orient.down.name(), next_down.name());
@@ -542,9 +546,10 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             todo.remove(&p);
         }
     }
+    normals.iter().for_each(|(p,o)| o.check(p));
     println!();
     for (p, orient) in &normals {
-        // println!("{p:?}: {}", orient.print());
+        println!("{p:?}: {}", orient.print());
     }
 
     // (Pos, Normal) -> content
@@ -553,22 +558,29 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     let mut p_to_p3 : HashMap<P, P3> = Default::default();
     for (p, points) in &sides {
         let orient = normals.get(&p).unwrap();
-        println!("{:?}: {}", p, orient.print());
-        let mut row_start = if orient.normal == UP3 {
-            P3{x: 0, y: 0, z: 0}
+        // println!("{:?}: {}", p, orient.print());
+        let mut row_start : P3 = if orient.normal == UP3 {
+            P3{x: 0, y: 0, z: 0} // new
+            // P3{x: 0, y: 0, z: 0} // example
         } else if orient.normal == OUT3 {
-            P3{x: max, y: 0, z: 0}
+            P3{x: 0, y: 0, z: 0} // new
+            // P3{x: max, y: 0, z: 0} // example
         } else if orient.normal == LEFT3 {
-            P3{x: 0, y: 0, z: 0}
+            P3 {x: 0, y: 0, z: -max} // new
+            // P3{x: 0, y: 0, z: 0} // example
         } else if orient.normal == IN3 {
-            P3{x: 0, y: 0, z: -max}
+            P3 {x: 0, y: 0, z: -max} // new
+            // P3{x: 0, y: 0, z: -max} // example
         } else if orient.normal == DOWN3 {
-            P3{x: 0, y: max, z: -max}
+            P3 {x: 0, y: max, z: -max} // new
+            // P3{x: 0, y: max, z: -max} // example
         } else if orient.normal == RIGHT3 {
-            P3{x: max, y: max, z: -max}
+            P3{x: max, y: 0, z: 0} // new
+            // P3{x: max, y: max, z: -max} // example
         } else {
             todo!("{}", orient.print())
         };
+        println!("{:?}: start: {:?}", p, row_start);
         let (min_x, max_x) = points.keys().map(|p| p.col).minmax().into_option().unwrap();
         let (min_y, max_y) = points.keys().map(|p| p.row).minmax().into_option().unwrap();
         assert_eq!(0, min_x);
@@ -581,13 +593,13 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
                 let tmp_pos = P{row: row as isize, col: col as isize};
                 let tmp_pos2 = points.get(&tmp_pos).unwrap();
                 let value = tmp_pos2.get(&map).unwrap();
-                println!("{:?} -> {:?} -> {} at {:?}", tmp_pos, tmp_pos2, value, cube_pos);
+                // println!("{:?} -> {:?} -> {} at {:?}", tmp_pos, tmp_pos2, value, cube_pos);
                 cube.insert((cube_pos, orient.normal), (value,*tmp_pos2));
                 p_to_p3.insert(*tmp_pos2, cube_pos);
                 cube_pos = cube_pos.add(orient.right);
             }
             row_start = row_start.add(orient.down);
-            println!("row start {:?}", row_start);
+            // println!("row start {:?}", row_start);
         }
     }
 
@@ -598,15 +610,9 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             orient_per_p.insert(*map_pos, orient);
         }
     }
-    dbg!(orient_per_p.len());
+    // dbg!(orient_per_p.len());
 
     run_path2(&map, &path, &cube, &p_to_p3, &orient_per_p);
-
-    let start = find_start(&map);
-    let start = P3{x: start.col, y: start.row, z: 0};
-    let (min_x, max_x) = (start.x, start.x-1+size as isize);
-    let (min_y, max_y) = (start.y, start.y);
-    let (min_z, max_z) = (start.z, start.z+1-(size as isize));
 
     let e = s.elapsed();
 
