@@ -136,6 +136,7 @@ struct Blueprint {
 }
 
 impl Blueprint {
+    #[allow(unused)]
     fn dbg(&self, m: &HashMap<&str, u8>) {
         let m: HashMap<u8, &str> = m.iter().map(|(name, i)| (*i, *name)).collect();
         let cost: HashMap<&str, HashMap<&str, u8>> = self
