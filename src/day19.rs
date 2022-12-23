@@ -1,12 +1,12 @@
 use anyhow::Result;
 use maplit::hashmap;
 use rayon::prelude::*;
+use rustc_hash::FxHashMap as HashMap;
 use smallvec::{smallvec, SmallVec};
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap};
+use std::collections::BinaryHeap;
 use std::hash::{Hash, Hasher};
 use std::time::{Duration, Instant};
-use rustc_hash::FxHashMap as HashMap;
 
 type V<T> = SmallVec<[T; 5]>;
 
@@ -196,7 +196,9 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         "obsidian" => OBSIDIAN,
         "ore" => ORE,
         "geode" => GEODE,
-    }.into_iter().collect();
+    }
+    .into_iter()
+    .collect();
 
     let input: Vec<Blueprint> = input.lines().map(|s| parse(s, &m)).collect();
 

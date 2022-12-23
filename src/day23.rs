@@ -2,8 +2,11 @@ use anyhow::Result;
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_hash::FxHashSet as HashSet;
+use smallvec::SmallVec;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
+
+type V<T> = SmallVec<[T; 2]>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct P {
@@ -56,7 +59,7 @@ impl P {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy)]
 struct Rule {
     free_dirs: [P; 3],
     move_dir: P,
@@ -114,37 +117,34 @@ const SW: P = S.add(W);
 const NEIGHBOURS: [P; 8] = [N, S, W, E, NE, NW, SE, SW];
 
 fn next_step(m: &HashSet<P>, rules: &VecDeque<Rule>) -> HashSet<P> {
-    let mut ret = Vec::with_capacity(m.len());
-    let mut proposed: HashMap<P, Vec<P>> = Default::default();
-    for elf in m {
+    let mut ret = Vec::with_capacity(m.capacity());
+    let mut proposed: HashMap<P, V<P>> = HashMap::default();
+    proposed.reserve(m.capacity());
+    'out: for elf in m {
         let mut adjacent = elf.adjacent_iter(m).peekable();
         if adjacent.peek().is_none() {
             ret.push(*elf);
             continue;
         }
-        let mut proposed_already = false;
         for rule in rules {
             if rule.passes(adjacent.clone()) {
                 proposed
                     .entry(elf.add(rule.move_dir))
                     .or_default()
                     .push(*elf);
-                proposed_already = true;
-                break;
+                continue 'out;
             }
         }
-        if !proposed_already {
-            ret.push(*elf);
-        }
+        ret.push(*elf);
     }
     for (target, candidates) in proposed {
-        debug_assert!(candidates.len() >= 1);
+        debug_assert!(!candidates.is_empty());
+        debug_assert!(!candidates.spilled());
+
         if candidates.len() == 1 {
             ret.push(target);
         } else {
-            for cand in candidates {
-                ret.push(cand);
-            }
+            ret.extend_from_slice(&candidates);
         }
     }
     ret.into_iter().collect()
@@ -167,17 +167,16 @@ fn print(m: &HashSet<P>) {
 }
 
 fn count_empty(m: &HashSet<P>) -> usize {
-    let mut ret = 0;
     let (minx, maxx) = m.iter().map(|p| p.col).minmax().into_option().unwrap();
     let (miny, maxy) = m.iter().map(|p| p.row).minmax().into_option().unwrap();
-    for row in miny..=maxy {
-        for col in minx..=maxx {
-            if !m.contains(&P { row, col }) {
-                ret += 1;
-            }
-        }
-    }
-    ret
+    itertools::iproduct!(miny..=maxy, minx..=maxx)
+        .filter(|(row, col)| {
+            !m.contains(&P {
+                row: *row,
+                col: *col,
+            })
+        })
+        .count()
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
