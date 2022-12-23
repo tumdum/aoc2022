@@ -2,8 +2,11 @@ use anyhow::Result;
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_hash::FxHashSet as HashSet;
+use smallvec::{smallvec, SmallVec};
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
+
+type V<T> = SmallVec<[T; 8]>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct P {
@@ -19,7 +22,17 @@ impl P {
         }
     }
 
-    fn adjacent(self, m: &HashSet<P>) -> HashSet<P> {
+    fn adjacent_any(self, m: &HashSet<P>) -> bool {
+        NEIGHBOURS.into_iter().any(|dir| m.contains(&self.add(dir)))
+    }
+
+    fn adjacent_iter(self, m: &'_ HashSet<P>) -> impl Iterator<Item = P> + '_ + Clone {
+        NEIGHBOURS
+            .into_iter()
+            .filter(move |dir| m.contains(&self.add(*dir)))
+    }
+
+    fn adjacent(self, m: &HashSet<P>) -> V<P> {
         NEIGHBOURS
             .into_iter()
             .filter(|dir| m.contains(&self.add(*dir)))
@@ -64,10 +77,13 @@ struct Rule {
 }
 
 impl Rule {
-    fn passes(&self, non_empty_adjacent: &HashSet<P>) -> bool {
+    fn passes(&self, mut non_empty_adjacent: impl Iterator<Item = P>) -> bool {
+        non_empty_adjacent.all(|dir| !self.free_dirs.contains(&dir))
+        /*
         self.free_dirs
             .iter()
             .all(|dir| !non_empty_adjacent.contains(dir))
+            */
     }
     fn print(&self) -> String {
         format!(
@@ -115,18 +131,17 @@ const SW: P = S.add(W);
 const NEIGHBOURS: [P; 8] = [N, S, W, E, NE, NW, SE, SW];
 
 fn next_step(m: &HashSet<P>, rules: &VecDeque<Rule>) -> HashSet<P> {
-    let mut ret = HashSet::default();
+    let mut ret = Vec::with_capacity(m.len());
     let mut proposed: HashMap<P, Vec<P>> = Default::default();
     for elf in m {
-        let adjacent = elf.adjacent(m);
-        if adjacent.is_empty() {
-            ret.insert(*elf);
+        let mut adjacent = elf.adjacent_iter(m).peekable();
+        if adjacent.peek().is_none() {
+            ret.push(*elf);
             continue;
         }
         let mut proposed_already = false;
         for rule in rules {
-            if rule.passes(&adjacent) {
-                // println!("\tMove {elf:?} {}", rule.move_dir.name());
+            if rule.passes(adjacent.clone()) {
                 proposed
                     .entry(elf.add(rule.move_dir))
                     .or_default()
@@ -136,20 +151,20 @@ fn next_step(m: &HashSet<P>, rules: &VecDeque<Rule>) -> HashSet<P> {
             }
         }
         if !proposed_already {
-            ret.insert(*elf);
+            ret.push(*elf);
         }
     }
     for (target, candidates) in proposed {
         debug_assert!(candidates.len() >= 1);
         if candidates.len() == 1 {
-            ret.insert(target);
+            ret.push(target);
         } else {
             for cand in candidates {
-                ret.insert(cand);
+                ret.push(cand);
             }
         }
     }
-    ret
+    ret.into_iter().collect()
 }
 
 #[allow(unused)]
