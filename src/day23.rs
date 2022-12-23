@@ -2,11 +2,8 @@ use anyhow::Result;
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_hash::FxHashSet as HashSet;
-use smallvec::{smallvec, SmallVec};
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
-
-type V<T> = SmallVec<[T; 8]>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct P {
@@ -22,21 +19,10 @@ impl P {
         }
     }
 
-    fn adjacent_any(self, m: &HashSet<P>) -> bool {
-        NEIGHBOURS.into_iter().any(|dir| m.contains(&self.add(dir)))
-    }
-
     fn adjacent_iter(self, m: &'_ HashSet<P>) -> impl Iterator<Item = P> + '_ + Clone {
         NEIGHBOURS
             .into_iter()
             .filter(move |dir| m.contains(&self.add(*dir)))
-    }
-
-    fn adjacent(self, m: &HashSet<P>) -> V<P> {
-        NEIGHBOURS
-            .into_iter()
-            .filter(|dir| m.contains(&self.add(*dir)))
-            .collect()
     }
 
     fn name(self) -> String {
@@ -79,12 +65,9 @@ struct Rule {
 impl Rule {
     fn passes(&self, mut non_empty_adjacent: impl Iterator<Item = P>) -> bool {
         non_empty_adjacent.all(|dir| !self.free_dirs.contains(&dir))
-        /*
-        self.free_dirs
-            .iter()
-            .all(|dir| !non_empty_adjacent.contains(dir))
-            */
     }
+
+    #[allow(unused)]
     fn print(&self) -> String {
         format!(
             "Rule{{ free_dirs: {:?}, move_dir: {} }}",
