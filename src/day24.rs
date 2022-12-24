@@ -196,7 +196,7 @@ fn find_path(start: P, end: P, start_time: usize, states: &[Map]) -> usize {
         }
         for next_pos in MOVES.into_iter().map(|dir| p.add(dir)) {
             let next_time = t + 1;
-            if next_pos.is_free_for_exp(&states[next_time]) {
+            if next_pos.is_free_for_exp(&states[next_time % states.len()]) {
                 if seen.contains(&(next_pos, next_time)) {
                     continue;
                 }
@@ -235,8 +235,11 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
 
     let mut states: Vec<Map> = vec![];
     states.push(map.clone());
-    for _ in 0..1000 {
+    for _ in 0.. {
         let next = next_wind(states.last().unwrap());
+        if next == map {
+            break;
+        }
         states.push(next);
     }
 
