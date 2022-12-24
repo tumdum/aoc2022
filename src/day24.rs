@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 struct P {
     row: i16,
     col: i16,
@@ -25,7 +25,7 @@ impl P {
             col: self.col + o.col,
         }
     }
-    fn is_not_wind(&self, m: &Map) -> bool {
+    fn is_not_wall(&self, m: &Map) -> bool {
         self.get(m)
             .map(|contents| contents.iter().all(|item| item != &Wall))
             .unwrap_or(false)
@@ -34,6 +34,32 @@ impl P {
         self.get(m)
             .map(|contents| contents.is_empty())
             .unwrap_or(false)
+    }
+    fn wrap(self, dir: P, rows: usize, cols: usize) -> P {
+        let next_wind_pos = if dir == DOWN {
+            P {
+                col: self.col,
+                row: 1,
+            }
+        } else if dir == UP {
+            P {
+                col: self.col,
+                row: rows as i16 - 2,
+            }
+        } else if dir == RIGHT {
+            P {
+                col: 1,
+                row: self.row,
+            }
+        } else if dir == LEFT {
+            P {
+                col: cols as i16 - 2,
+                row: self.row,
+            }
+        } else {
+            todo!("dir: {:?}", dir)
+        };
+        next_wind_pos
     }
 }
 
@@ -133,31 +159,19 @@ fn next_wind(m: &Map) -> Map {
                 col: col as i16,
             };
             let content = p.get(m).unwrap();
-            for wind in content.iter().filter(|item| matches!(item, Blizzard(_))) {
-                if let Blizzard(dir) = wind {
-                    let next_wind_pos = p.add(*dir);
-                    if next_wind_pos.is_not_wind(&next) {
-                        next_wind_pos.set(&mut next, *wind);
-                    } else {
-                        let next_wind_pos = if *dir == DOWN {
-                            P { col: p.col, row: 1 }
-                        } else if *dir == UP {
-                            P {
-                                col: p.col,
-                                row: m.len() as i16 - 2,
-                            }
-                        } else if *dir == RIGHT {
-                            P { col: 1, row: p.row }
-                        } else if *dir == LEFT {
-                            P {
-                                col: m[p.row as usize].len() as i16 - 2,
-                                row: p.row,
-                            }
-                        } else {
-                            todo!("dir: {:?}", dir)
-                        };
-                        next_wind_pos.set(&mut next, *wind);
-                    }
+            for dir in content.iter().flat_map(|item| {
+                if let Blizzard(d) = item {
+                    Some(d)
+                } else {
+                    None
+                }
+            }) {
+                let next_wind_pos = p.add(*dir);
+                if next_wind_pos.is_not_wall(&next) {
+                    next_wind_pos.set(&mut next, Blizzard(*dir));
+                } else {
+                    let next_wind_pos = p.wrap(*dir, m.len(), m[0].len());
+                    next_wind_pos.set(&mut next, Blizzard(*dir));
                 }
             }
         }
