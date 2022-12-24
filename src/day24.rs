@@ -1,5 +1,4 @@
 use anyhow::Result;
-use rustc_hash::FxHashSet as HashSet;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
@@ -11,8 +10,6 @@ struct P {
 
 impl P {
     fn get<'a>(&self, m: &'a Map) -> Option<&'a [Item]> {
-        debug_assert!(self.row >= 0 && self.col >= 0);
-        debug_assert!(self.row < m.len() as i16 && self.col < m[0].len() as i16);
         m.get(self.row as usize)
             .and_then(|row| row.get(self.col as usize))
             .map(|v| v.as_slice())
@@ -28,13 +25,12 @@ impl P {
             col: self.col + o.col,
         }
     }
-    fn is_free_for_wind(&self, m: &Map) -> bool {
-        match self.get(m) {
-            None => false,
-            Some(content) => content.iter().all(|item| item != &Wall),
-        }
+    fn is_not_wind(&self, m: &Map) -> bool {
+        self.get(m)
+            .map(|contents| contents.iter().all(|item| item != &Wall))
+            .unwrap_or(false)
     }
-    fn is_free_for_exp(&self, m: &Map) -> bool {
+    fn is_free(&self, m: &Map) -> bool {
         self.get(m)
             .map(|contents| contents.is_empty())
             .unwrap_or(false)
@@ -106,7 +102,6 @@ fn print(m: &Map) {
                     Blizzard(d) if d == DOWN => print!("v"),
                     Blizzard(d) if d == LEFT => print!("<"),
                     Blizzard(d) if d == RIGHT => print!(">"),
-                    // Expedition => print!("E"),
                     Wall => print!("#"),
                     _ => todo!(),
                 }
@@ -116,24 +111,21 @@ fn print(m: &Map) {
     }
 }
 
-fn copy_without_wind(m: &Map) -> Map {
-    let mut ret = Vec::with_capacity(m.len());
-    for row in m {
-        ret.push(Vec::with_capacity(row.len()));
-        for e in row {
-            ret.last_mut().unwrap().push(
-                e.iter()
-                    .filter(|item| !matches!(item, Blizzard(_)))
-                    .copied()
-                    .collect(),
-            );
-        }
+fn clean_map(m: &Map) -> Map {
+    let rows = m.len();
+    let cols = m[0].len();
+    let mut base = vec![vec![vec![]; cols]; rows];
+    base[0] = m[0].clone();
+    base[rows - 1] = m[rows - 1].clone();
+    for row in 0..rows {
+        base[row][0] = vec![Wall];
+        base[row][cols - 1] = vec![Wall];
     }
-    ret
+    base
 }
 
 fn next_wind(m: &Map) -> Map {
-    let mut next = copy_without_wind(m);
+    let mut next = clean_map(m);
     for row in 0..m.len() {
         for col in 0..m[row].len() {
             let p = P {
@@ -144,7 +136,7 @@ fn next_wind(m: &Map) -> Map {
             for wind in content.iter().filter(|item| matches!(item, Blizzard(_))) {
                 if let Blizzard(dir) = wind {
                     let next_wind_pos = p.add(*dir);
-                    if next_wind_pos.is_free_for_wind(&next) {
+                    if next_wind_pos.is_not_wind(&next) {
                         next_wind_pos.set(&mut next, *wind);
                     } else {
                         let next_wind_pos = if *dir == DOWN {
@@ -173,9 +165,13 @@ fn next_wind(m: &Map) -> Map {
     next
 }
 
-fn find_path(start: P, end: P, start_time: usize, states: &[Map]) -> usize {
-    let mut seen: HashSet<(P, usize)> = Default::default();
-
+fn find_path(
+    start: P,
+    end: P,
+    start_time: usize,
+    seen: &mut Vec<Vec<Vec<bool>>>,
+    states: &[Map],
+) -> usize {
     let mut todo: VecDeque<(P, usize)> = Default::default();
     todo.push_back((start, start_time));
 
@@ -185,11 +181,11 @@ fn find_path(start: P, end: P, start_time: usize, states: &[Map]) -> usize {
         }
         for next_pos in MOVES.into_iter().map(|dir| p.add(dir)) {
             let next_time = t + 1;
-            if next_pos.is_free_for_exp(&states[next_time % states.len()]) {
-                if seen.contains(&(next_pos, next_time)) {
+            if next_pos.is_free(&states[next_time % states.len()]) {
+                if seen[next_pos.row as usize][next_pos.col as usize][next_time] == true {
                     continue;
                 }
-                seen.insert((next_pos, next_time));
+                seen[next_pos.row as usize][next_pos.col as usize][next_time] = true;
                 todo.push_back((next_pos, next_time));
             }
         }
@@ -207,11 +203,12 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             map.last_mut().unwrap().push(Item::parse(element));
         }
     }
+    let start_map = map;
 
     let start = P { row: 0, col: 1 };
     let end = P {
-        row: map.len() as i16 - 1,
-        col: map
+        row: start_map.len() as i16 - 1,
+        col: start_map
             .last()
             .unwrap()
             .iter()
@@ -220,21 +217,26 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             .unwrap()
             .0 as i16,
     };
+
     let s = Instant::now();
 
     let mut states: Vec<Map> = vec![];
-    states.push(map.clone());
-    for _ in 0.. {
+    states.push(start_map.clone());
+    loop {
         let next = next_wind(states.last().unwrap());
-        if next == map {
+        if next == start_map {
             break;
         }
         states.push(next);
     }
 
-    let part1 = find_path(start, end, 0, &states);
-    let back = find_path(end, start, part1, &states);
-    let part2 = find_path(start, end, back, &states);
+    // row / col / time
+    let mut seen: Vec<Vec<Vec<bool>>> =
+        vec![vec![vec![false; 1000]; states[0][0].len()]; states[0].len()];
+
+    let part1 = find_path(start, end, 0, &mut seen, &states);
+    let back = find_path(end, start, part1, &mut seen, &states);
+    let part2 = find_path(start, end, back, &mut seen, &states);
 
     let e = s.elapsed();
 
