@@ -11,16 +11,15 @@ struct P {
 
 impl P {
     fn get<'a>(&self, m: &'a Map) -> Option<&'a [Item]> {
-        if self.row < 0 || self.col < 0 {
-            return None;
-        }
+        debug_assert!(self.row >= 0 && self.col >= 0);
+        debug_assert!(self.row < m.len() as i16 && self.col < m[0].len() as i16);
         m.get(self.row as usize)
             .and_then(|row| row.get(self.col as usize))
             .map(|v| v.as_slice())
     }
     fn set(&self, m: &mut Map, val: Item) {
-        assert!(self.row >= 0 && self.col >= 0);
-        assert!(self.row < m.len() as i16 && self.col < m[0].len() as i16);
+        debug_assert!(self.row >= 0 && self.col >= 0);
+        debug_assert!(self.row < m.len() as i16 && self.col < m[0].len() as i16);
         m[self.row as usize][self.col as usize].push(val);
     }
     fn add(self, o: Self) -> P {
@@ -32,23 +31,13 @@ impl P {
     fn is_free_for_wind(&self, m: &Map) -> bool {
         match self.get(m) {
             None => false,
-            Some(content) => {
-                let ret = content.iter().all(|item| item != &Wall);
-                // println!("{:?}: {:?} vs {}", self, content, ret);
-                ret
-            }
+            Some(content) => content.iter().all(|item| item != &Wall),
         }
     }
     fn is_free_for_exp(&self, m: &Map) -> bool {
-        match self.get(m) {
-            None => false,
-            Some(content) => {
-                let ret = content
-                    .iter()
-                    .all(|item| item != &Wall && !matches!(item, Blizzard(_)));
-                ret
-            }
-        }
+        self.get(m)
+            .map(|contents| contents.is_empty())
+            .unwrap_or(false)
     }
 }
 
