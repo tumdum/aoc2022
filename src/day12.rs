@@ -1,8 +1,10 @@
 use anyhow::Result;
 use itertools::iproduct;
-use std::collections::VecDeque;
+use std::fmt::Debug;
+use std::hash::Hash;
 use std::time::{Duration, Instant};
 
+use crate::dijkstra::dijkstra;
 use crate::input::tokens;
 
 const NEIGHBOURS_OFF: [Pos; 4] = [
@@ -84,53 +86,6 @@ struct State {
     next: Pos,
 }
 
-impl State {
-    fn new(next: Pos, height: u8, path_len: u32) -> Self {
-        Self {
-            next,
-            height,
-            path_len,
-        }
-    }
-}
-
-fn find_path_len(
-    start: Pos,
-    target: Pos,
-    m: &[Vec<u8>],
-    pred: impl Fn(u8, u8) -> bool,
-) -> Vec<Vec<Option<(Pos, u32)>>> {
-    let mut best: Vec<Vec<Option<(Pos, u32)>>> = vec![vec![None; m[0].len()]; m.len()];
-    // Instead of Dijkstra that would use here BinaryHeap, use VecDeque to get
-    // simple bfs that make this problem run much faster.
-    let mut todo = VecDeque::with_capacity(64);
-    todo.push_back(State::new(start, start.get(m).unwrap(), 0));
-    best[start.row as usize][start.col as usize] = Some((start, 0));
-    'out: while let Some(state) = todo.pop_front() {
-        for (pos, h) in state
-            .next
-            .get_neighbours(m)
-            .filter(|(_, h)| pred(state.height, *h))
-        {
-            let next_path_len = state.path_len + 1;
-            if best[pos.row as usize][pos.col as usize]
-                .map(|(_, h)| h)
-                .unwrap_or(u32::max_value())
-                <= next_path_len
-            {
-                continue;
-            }
-            best[pos.row as usize][pos.col as usize] = Some((state.next, next_path_len));
-            todo.push_back(State::new(pos, h, next_path_len));
-            if pos == target {
-                break 'out;
-            }
-        }
-    }
-
-    best
-}
-
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
     let mut m: Vec<Vec<u8>> = tokens::<String>(input, None)
         .into_iter()
@@ -146,11 +101,25 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
     *target.get_mut(&mut m).unwrap() = b'z';
 
     let can_move_inv = |a, b| can_move(b, a);
-    let best = find_path_len(target, Pos { row: -10, col: -10 }, &m, can_move_inv);
-    let part1 = start.get(&best).unwrap().unwrap().1 as usize;
-    let part2 = iproduct!(0..m.len(), 0..m[0].len())
+    let neighbours_of = |p: &Pos| {
+        let from: u8 = p.get(&m).unwrap();
+        let n: Vec<_> = p.get_neighbours(&m).collect();
+        n.into_iter()
+            .filter(|(_, h)| can_move_inv(from, *h))
+            .map(|(next, _)| (next, 1))
+            .collect()
+    };
+    let (cost, _prev) = dijkstra(target, neighbours_of);
+    let part1 = *cost.get(&start).unwrap();
+
+    let part2 = *iproduct!(0..m.len(), 0..m[0].len())
         .filter(|(row, col)| m[*row][*col] == b'a')
-        .filter_map(|(row, col)| best[row][col].map(|(_, l)| l))
+        .filter_map(|(row, col)| {
+            cost.get(&Pos {
+                row: row as i32,
+                col: col as i32,
+            })
+        })
         .min()
         .unwrap();
 
