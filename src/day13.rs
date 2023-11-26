@@ -4,6 +4,7 @@ use nom::character::complete::{char, u8};
 use nom::{branch::alt, multi::separated_list0, sequence::delimited, IResult};
 use std::borrow::Borrow;
 use std::cmp::Ordering;
+use std::str::FromStr;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, PartialEq, Clone, Eq)]
@@ -12,7 +13,17 @@ enum Packet {
     List(Vec<Packet>),
 }
 
+impl FromStr for Packet {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(parse(s))
+    }
+}
+
 use Packet::*;
+
+use crate::input::token_groups;
 
 fn packet(i: &str) -> IResult<&str, Packet> {
     fn num(input: &str) -> IResult<&str, Packet> {
@@ -74,11 +85,9 @@ fn parse(s: &str) -> Packet {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<&str> = input.lines().collect();
-
-    let input: Vec<_> = input
-        .split(|l| l.is_empty())
-        .map(|v| (parse(v[0]), parse(v[1])))
+    let input: Vec<(Packet, Packet)> = token_groups(input, "\n\n", None)
+        .into_iter()
+        .map(|v: Vec<Packet>| (v[0].clone(), v[1].clone()))
         .collect();
 
     let s = Instant::now();

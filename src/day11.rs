@@ -2,7 +2,9 @@ use anyhow::{anyhow, Error, Result};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Debug)]
+use crate::input::tokens;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Test {
     divisible_by: u64,
     if_true: usize,
@@ -42,7 +44,7 @@ impl Test {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Num {
     N(u64),
     Old,
@@ -68,7 +70,7 @@ impl FromStr for Num {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Operation {
     Times(Num),
     Add(Num),
@@ -96,7 +98,7 @@ impl FromStr for Operation {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Monkey {
     items: Vec<u64>,
     operation: Operation,
@@ -121,6 +123,15 @@ impl Monkey {
             test,
             inspect_count: 0,
         }
+    }
+}
+
+impl FromStr for Monkey {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let s: Vec<&str> = s.split("\n").collect();
+        Ok(Self::parse(&s))
     }
 }
 
@@ -151,8 +162,7 @@ fn simulate(mut monkeys: Vec<Monkey>, part: usize) -> usize {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<&str> = input.lines().collect();
-    let monkeys: Vec<Monkey> = input.split(|l| l.is_empty()).map(Monkey::parse).collect();
+    let monkeys: Vec<Monkey> = tokens(input, Some("\n\n"));
 
     let s = Instant::now();
 

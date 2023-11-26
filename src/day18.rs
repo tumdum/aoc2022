@@ -5,6 +5,8 @@ use std::collections::VecDeque;
 use std::ops::RangeInclusive;
 use std::time::{Duration, Instant};
 
+use crate::input::token_groups;
+
 const NEIGHBOURS: [P3; 6] = [
     P3 { x: 1, y: 0, z: 0 },
     P3 { x: -1, y: 0, z: 0 },
@@ -31,15 +33,6 @@ impl P3 {
             y: self.y + other.y,
             z: self.z + other.z,
         }
-    }
-}
-
-fn parse(s: &str) -> P3 {
-    let mut v = s.split(',').map(|s| s.parse().unwrap());
-    P3 {
-        x: v.next().unwrap(),
-        y: v.next().unwrap(),
-        z: v.next().unwrap(),
     }
 }
 
@@ -113,7 +106,14 @@ fn count_exposed_sides(ps: &[P3]) -> (usize, usize) {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<P3> = input.lines().map(parse).collect();
+    let input: Vec<P3> = token_groups(input, "\n", Some(","))
+        .into_iter()
+        .map(|v| P3 {
+            x: v[0],
+            y: v[1],
+            z: v[2],
+        })
+        .collect();
 
     let s = Instant::now();
 

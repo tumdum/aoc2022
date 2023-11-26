@@ -1,11 +1,12 @@
 use anyhow::{anyhow, Result};
 use std::time::{Duration, Instant};
 
+use crate::input::token_groups;
+
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<&str> = input.lines().collect();
-    let mut input: Vec<u32> = input
-        .split(|s| s.is_empty())
-        .map(|s| s.iter().flat_map(|i| i.parse::<u32>()).sum())
+    let mut input: Vec<u32> = token_groups::<u32>(input, "\n\n", None)
+        .into_iter()
+        .map(|sub| sub.into_iter().sum())
         .collect();
 
     let s = Instant::now();

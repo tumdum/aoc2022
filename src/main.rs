@@ -32,7 +32,7 @@ fn median(array: &[Duration]) -> Duration {
         let ind_right = array.len() / 2;
         (array[ind_left] + array[ind_right]).div_f64(2.0)
     } else {
-        array[(array.len() / 2)]
+        array[array.len() / 2]
     }
 }
 

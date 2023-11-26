@@ -3,6 +3,8 @@ use rustc_hash::FxHashSet as HashSet;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
+use crate::input::token_groups;
+
 #[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
 struct Pos {
     x: i16,
@@ -83,12 +85,11 @@ fn simulate_and_find_tail_positions(mut rope: Vec<Pos>, moves: &[(Dir, usize)]) 
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<(Dir, usize)> = input
-        .lines()
+    let input: Vec<(Dir, usize)> = token_groups::<String>(input, "\n", Some(" "))
+        .into_iter()
         .map(|l| {
-            let mut l = l.split(' ');
-            let dir = l.next().unwrap().parse().unwrap();
-            let count = l.next().unwrap().parse().unwrap();
+            let dir = l[0].parse().unwrap();
+            let count = l[1].parse().unwrap();
             (dir, count)
         })
         .collect();

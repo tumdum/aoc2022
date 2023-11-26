@@ -6,7 +6,10 @@ use smallvec::{smallvec, SmallVec};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 use std::time::{Duration, Instant};
+
+use crate::input::tokens;
 
 type V<T> = SmallVec<[T; 5]>;
 
@@ -135,6 +138,14 @@ struct Blueprint {
     cost: [[u8; 4]; 4],
 }
 
+impl FromStr for Blueprint {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(parse(s))
+    }
+}
+
 impl Blueprint {
     #[allow(unused)]
     fn dbg(&self, m: &HashMap<&str, u8>) {
@@ -159,7 +170,16 @@ impl Blueprint {
     }
 }
 
-fn parse(s: &str, m: &HashMap<&str, u8>) -> Blueprint {
+fn parse(s: &str) -> Blueprint {
+    let m: HashMap<&str, u8> = hashmap! {
+        "clay" => CLAY,
+        "obsidian" => OBSIDIAN,
+        "ore" => ORE,
+        "geode" => GEODE,
+    }
+    .into_iter()
+    .collect();
+
     let s = s.replace('.', "");
     let s: Vec<_> = s.split(' ').collect();
     let id: usize = s[1].strip_suffix(':').unwrap().parse().unwrap();
@@ -191,16 +211,8 @@ fn compute_part2(blueprint: &Blueprint) -> usize {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let m: HashMap<&str, u8> = hashmap! {
-        "clay" => CLAY,
-        "obsidian" => OBSIDIAN,
-        "ore" => ORE,
-        "geode" => GEODE,
-    }
-    .into_iter()
-    .collect();
-
-    let input: Vec<Blueprint> = input.lines().map(|s| parse(s, &m)).collect();
+    let input: Vec<Blueprint> = tokens(input, Some("\n"));
+    // let input: Vec<Blueprint> = input.lines().map(|s| parse(s)).collect();
 
     let s = Instant::now();
 

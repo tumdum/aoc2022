@@ -2,7 +2,9 @@ use anyhow::Result;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone, Copy)]
+use crate::input::tokens;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Op {
     Noop,
     Addx(i32),
@@ -38,7 +40,7 @@ fn print(screen: &[char]) {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let mut ops: Vec<Op> = input.lines().map(|l| l.parse().unwrap()).collect();
+    let mut ops: Vec<Op> = tokens(input, Some("\n"));
 
     let s = Instant::now();
 

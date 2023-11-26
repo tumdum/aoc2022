@@ -14,6 +14,8 @@ enum Piece {
 
 use Piece::*;
 
+use crate::input::token_groups;
+
 impl Piece {
     fn play(&self, other: &Self) -> i32 {
         if self == other {
@@ -68,14 +70,9 @@ impl FromStr for Piece {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<(Piece, char)> = input
-        .lines()
-        .map(|l| {
-            let mut tmp = l.split(' ');
-            let l = tmp.next().unwrap().parse().unwrap();
-            let r = tmp.next().unwrap().chars().next().unwrap();
-            (l, r)
-        })
+    let input: Vec<(Piece, char)> = token_groups::<String>(input, "\n", None)
+        .iter()
+        .map(|v| (v[0].parse().unwrap(), v[1].chars().next().unwrap()))
         .collect();
 
     let s = Instant::now();

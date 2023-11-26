@@ -1,3 +1,4 @@
+pub mod input;
 pub mod u8set;
 use u8set::U8Set;
 

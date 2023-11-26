@@ -3,6 +3,8 @@ use itertools::iproduct;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
+use crate::input::tokens;
+
 const NEIGHBOURS_OFF: [Pos; 4] = [
     Pos { row: 1, col: 0 },
     Pos { row: -1, col: 0 },
@@ -130,7 +132,10 @@ fn find_path_len(
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let mut m: Vec<Vec<u8>> = input.lines().map(|l| l.bytes().collect()).collect();
+    let mut m: Vec<Vec<u8>> = tokens::<String>(input, None)
+        .into_iter()
+        .map(|l| l.bytes().collect())
+        .collect();
 
     let s = Instant::now();
 

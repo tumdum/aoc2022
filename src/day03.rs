@@ -1,4 +1,4 @@
-use crate::U8Set;
+use crate::{input::tokens, U8Set};
 use anyhow::Result;
 use std::time::{Duration, Instant};
 
@@ -13,7 +13,10 @@ fn score(b: u8) -> u64 {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<Vec<u8>> = input.lines().map(|l| l.bytes().collect()).collect();
+    let input: Vec<Vec<u8>> = tokens::<String>(input, None)
+        .iter()
+        .map(|s| s.bytes().collect())
+        .collect();
 
     let s = Instant::now();
 

@@ -1,6 +1,8 @@
 use anyhow::Result;
 use std::time::{Duration, Instant};
 
+use crate::input::{token_groups, tokens};
+
 #[derive(Debug)]
 struct Move {
     from: usize,
@@ -9,8 +11,7 @@ struct Move {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<_> = input.lines().collect();
-    let mut input = input.split(|l| l.is_empty());
+    let mut input = token_groups::<String>(input, "\n\n", Some("\n")).into_iter();
     let stacks: Vec<Vec<u8>> = input
         .next()
         .unwrap()
@@ -37,11 +38,12 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
         .unwrap()
         .iter()
         .map(|l| {
-            let mut l = l.split(' ').flat_map(|s| s.parse::<usize>());
-            let count = l.next().unwrap();
-            let from = l.next().unwrap();
-            let to = l.next().unwrap();
-            Move { from, to, count }
+            let tmp = tokens::<usize>(l, None);
+            Move {
+                from: tmp[1],
+                to: tmp[2],
+                count: tmp[0],
+            }
         })
         .collect();
 

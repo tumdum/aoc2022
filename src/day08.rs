@@ -5,6 +5,8 @@ use itertools::{
     Itertools,
 };
 use std::time::{Duration, Instant};
+
+use crate::input::tokens;
 const DIRS: [Pos; 4] = [
     Pos { row: 1, col: 0 },
     Pos { row: -1, col: 0 },
@@ -64,8 +66,8 @@ fn scenic_score(trees: &[Vec<i8>], row: usize, col: usize) -> usize {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
-    let input: Vec<Vec<i8>> = input
-        .lines()
+    let input: Vec<Vec<i8>> = tokens::<String>(input, None)
+        .into_iter()
         .map(|l| l.bytes().map(|b| (b - b'0') as i8).collect())
         .collect();
 

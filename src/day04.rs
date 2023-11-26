@@ -1,7 +1,12 @@
 use anyhow::Result;
-use std::time::{Duration, Instant};
+use std::{
+    str::FromStr,
+    time::{Duration, Instant},
+};
 
-#[derive(Debug)]
+use crate::input::token_groups;
+
+#[derive(Debug, Clone, Copy)]
 struct Range {
     first: i64,
     last: i64,
@@ -24,6 +29,14 @@ impl Range {
     }
 }
 
+impl FromStr for Range {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(Self::parse(s))
+    }
+}
+
 fn includes(a: &Range, b: &Range) -> bool {
     a.includes(b) || b.includes(a)
 }
@@ -33,6 +46,11 @@ fn overlaps(a: &Range, b: &Range) -> bool {
 }
 
 pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duration> {
+    let input: Vec<(Range, Range)> = token_groups::<Range>(input, "\n", Some(","))
+        .into_iter()
+        .map(|v| (v[0], v[1]))
+        .collect();
+    /*
     let input: Vec<_> = input
         .lines()
         .map(|l| {
@@ -42,6 +60,7 @@ pub fn solve(input: &str, verify_expected: bool, output: bool) -> Result<Duratio
             (a, b)
         })
         .collect();
+    */
 
     let s = Instant::now();
 
